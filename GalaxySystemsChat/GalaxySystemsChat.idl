@@ -1,0 +1,29 @@
+﻿// GalaxySystemsChat.idl: источник библиотеки типов для GalaxySystemsChat.exe
+
+// Этот файл будет обработан компилятором MIDL для создания
+// библиотека типов (GalaxySystemsChat.tlb).
+
+[ uuid(d05177eb-28f8-4319-b6da-24d64c738287), version(1.0) ]
+library GalaxySystemsChat
+{
+	importlib("stdole32.tlb");
+	importlib("stdole2.tlb");
+
+	//  Первичный интерфейс диспетчеризации для CGalaxySystemsChatDoc
+
+	[ uuid(44ccc5db-2872-433f-83ba-65f24fd8da8d) ]
+	dispinterface IGalaxySystemsChat
+	{
+		properties:
+
+		methods:
+	};
+
+	//  Сведения о классе CGalaxySystemsChatDoc
+
+	[ uuid(3e56574b-57e1-40a5-bc5b-edd84a78302d) ]
+	coclass GalaxySystemsChat
+	{
+		[default] dispinterface IGalaxySystemsChat;
+	};
+};

@@ -1,0 +1,17 @@
+﻿REGEDIT
+; Возможно, этот файл .REG используется программой установки.
+;   Если программа SETUP недоступна, записи, расположенные ниже, будут зарегистрированы
+;   в InitInstance автоматически с вызовом в
+;   CWinApp::RegisterShellFileTypes и COleObjectFactory::UpdateRegistryAll.
+
+
+HKEY_CLASSES_ROOT\GalaxySystemsChat.Application = GalaxySystemsChat Application
+
+
+HKEY_CLASSES_ROOT\GalaxySystemsChat.Application\CLSID = {3e56574b-57e1-40a5-bc5b-edd84a78302d}
+
+HKEY_CLASSES_ROOT\CLSID\{3e56574b-57e1-40a5-bc5b-edd84a78302d} = GalaxySystemsChat Application
+HKEY_CLASSES_ROOT\CLSID\{3e56574b-57e1-40a5-bc5b-edd84a78302d}\ProgId = GalaxySystemsChat.Application
+
+
+HKEY_CLASSES_ROOT\CLSID\{3e56574b-57e1-40a5-bc5b-edd84a78302d}\LocalServer32 = GalaxySystemsChat.EXE
