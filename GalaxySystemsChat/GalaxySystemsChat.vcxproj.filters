@@ -36,6 +36,15 @@
     <ClInclude Include="pch.h">
       <Filter>Файлы заголовков</Filter>
     </ClInclude>
+    <ClInclude Include="encrypt\encrypt_xor\encrypt_xor.h">
+      <Filter>Файлы заголовков</Filter>
+    </ClInclude>
+    <ClInclude Include="network\ip_4\BlockSock_ip_4.h">
+      <Filter>Файлы заголовков</Filter>
+    </ClInclude>
+    <ClInclude Include="network\ip_6\BlockSock_ip_6.h">
+      <Filter>Файлы заголовков</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="GalaxySystemsChat.cpp">
@@ -48,6 +57,15 @@
       <Filter>Исходные файлы</Filter>
     </ClCompile>
     <ClCompile Include="pch.cpp">
+      <Filter>Исходные файлы</Filter>
+    </ClCompile>
+    <ClCompile Include="encrypt\encrypt_xor\encrypt_xor.cpp">
+      <Filter>Исходные файлы</Filter>
+    </ClCompile>
+    <ClCompile Include="network\ip_4\BlockSock_ip_4.cpp">
+      <Filter>Исходные файлы</Filter>
+    </ClCompile>
+    <ClCompile Include="network\ip_6\BlockSock_ip_6.cpp">
       <Filter>Исходные файлы</Filter>
     </ClCompile>
   </ItemGroup>

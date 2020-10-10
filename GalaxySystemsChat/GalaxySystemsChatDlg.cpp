@@ -9,6 +9,11 @@
 #include "DlgProxy.h"
 #include "afxdialogex.h"
 
+#include "encrypt\encrypt_xor\encrypt_xor.h"
+
+#include "network\ip_4\BlockSock_ip_4.h"
+#include "network\ip_6\BlockSock_ip_6.h"
+
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #endif

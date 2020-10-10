@@ -196,17 +196,23 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="DlgProxy.h" />
+    <ClInclude Include="encrypt\encrypt_xor\encrypt_xor.h" />
     <ClInclude Include="framework.h" />
     <ClInclude Include="GalaxySystemsChat.h" />
     <ClInclude Include="GalaxySystemsChatDlg.h" />
+    <ClInclude Include="network\ip_4\BlockSock_ip_4.h" />
+    <ClInclude Include="network\ip_6\BlockSock_ip_6.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="Resource.h" />
     <ClInclude Include="targetver.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="DlgProxy.cpp" />
+    <ClCompile Include="encrypt\encrypt_xor\encrypt_xor.cpp" />
     <ClCompile Include="GalaxySystemsChat.cpp" />
     <ClCompile Include="GalaxySystemsChatDlg.cpp" />
+    <ClCompile Include="network\ip_4\BlockSock_ip_4.cpp" />
+    <ClCompile Include="network\ip_6\BlockSock_ip_6.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>

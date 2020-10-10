@@ -17,7 +17,7 @@
 
 IMPLEMENT_DYNCREATE(CGalaxySystemsChatDlgAutoProxy, CCmdTarget)
 
-CGalaxySystemsChatDlgAutoProxy::CGalaxySystemsChatDlgAutoProxy()
+CGalaxySystemsChatDlgAutoProxy::CGalaxySystemsChatDlgAutoProxy(): m_pDialog(nullptr)
 {
 	EnableAutomation();
 
