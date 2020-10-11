@@ -1,5 +1,5 @@
 // blocksock.cpp (CBlockingSocketException, CBlockingSocket, CHttpBlockingSocket)
-#include "..\..\pch.h"
+#include "pch.h"
 
 #include "blocksock_ip_6.h"
 
