@@ -5,17 +5,17 @@
 
 #include <list>
 
+#pragma comment (lib, "Ws2_32.lib")
+
+#pragma comment (lib, "Normaliz.lib")
+
+#pragma comment (lib, "dnsapi.lib")
 
 namespace network
 {
 	namespace ip_6
 	{
 
-#pragma comment (lib, "Ws2_32.lib")
-
-#pragma comment (lib, "Normaliz.lib")
-
-#pragma comment (lib, "dnsapi.lib")
 
 		// Class CBlockingSocketException
 		IMPLEMENT_DYNAMIC(CBlockingSocketException_ip_6, CException)
