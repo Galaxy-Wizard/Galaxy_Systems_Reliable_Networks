@@ -4,18 +4,20 @@
 // needs winsock.h in the precompiled headers
 
 #include <string>
+#include <list>
 
 namespace network
 {
 	namespace ip_6
 	{
 
-
 typedef const struct sockaddr_in6* LPSOCKADDR6;
+
+std::list<SOCKADDR_IN6> GetAddressInfoormationIPv6(const char* pchName, struct addrinfo* *result);
+CStringA GetNameInformationIPv6(IN6_ADDR parameter);
 
 class CBlockingSocketException_ip_6 : public CException
 {
-	DECLARE_DYNAMIC(CBlockingSocketException_ip_6)
 public:
 // Constructor
 	CBlockingSocketException_ip_6(wchar_t* pchMessage);

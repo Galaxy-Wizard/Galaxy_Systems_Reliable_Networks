@@ -4,6 +4,10 @@
 #include "blocksock_ip_6.h"
 
 #include <list>
+#include <winsock2.h>
+#include <ws2tcpip.h>
+#include <iphlpapi.h>
+#include <stdio.h>
 
 #pragma comment (lib, "Ws2_32.lib")
 
@@ -18,8 +22,6 @@ namespace network
 
 
 		// Class CBlockingSocketException
-		IMPLEMENT_DYNAMIC(CBlockingSocketException_ip_6, CException)
-
 			CBlockingSocketException_ip_6::CBlockingSocketException_ip_6(wchar_t* pchMessage)
 		{
 			m_strMessage = pchMessage;
@@ -218,17 +220,17 @@ namespace network
 			char local_port[10];
 			_itoa_s(ushPort, local_port, 10 - 1, 10);
 
-			struct addrinfo hints;
 			struct addrinfo* result = NULL;
-			ZeroMemory(&hints, sizeof(hints));
-			hints.ai_flags = AI_PASSIVE;
-			hints.ai_family = AF_UNSPEC;
-
-			DWORD dwRetval = getaddrinfo(pchName, local_port, &hints, &result);
-			if (dwRetval != 0) {
+			auto ipv6_addresses = GetAddressInfoormationIPv6(pchName, &result);
+			if (ipv6_addresses.size() == 0) {
 				throw new CBlockingSocketException_ip_6(L"Получение адреса по имени");
 			}
+			SOCKADDR_IN6 pulAddr = (SOCKADDR_IN6)ipv6_addresses.front();
 
+			if (result == NULL)
+			{
+				throw new CBlockingSocketException_ip_6(L"Получение адреса по имени");
+			}
 			SOCKADDR_IN6 sockTemp;
 			memcpy(&sockTemp, result->ai_addr, sizeof(SOCKADDR_IN6)); // address is already in network byte order
 			freeaddrinfo(result);
@@ -238,12 +240,8 @@ namespace network
 		//static
 		const char* CBlockingSocket_ip_6::GetHostByAddr(LPSOCKADDR6 psa)
 		{
-			hostent* pHostEnt = gethostbyaddr((char*)&((LPSOCKADDR_IN6)psa)
-				->sin6_addr, sizeof(((LPSOCKADDR_IN6)psa)->sin6_addr), PF_INET6);
-			if (pHostEnt == NULL) {
-				throw new CBlockingSocketException_ip_6(L"Получение адреса по адресу");
-			}
-			return pHostEnt->h_name; // caller shouldn't delete this memory
+			auto name = GetNameInformationIPv6(((LPSOCKADDR_IN6)psa)->sin6_addr);
+			return name;
 		}
 
 		// Class CHttpBlockingSocket
@@ -484,5 +482,190 @@ namespace network
 			return (0);
 		}
 
+
+		std::list<SOCKADDR_IN6> GetAddressInfoormationIPv6(const char* pchName, struct addrinfo* *result)
+		{
+			std::list<SOCKADDR_IN6> Results;
+			//SOCKADDR_IN6 Result;
+			INT iRetval;
+
+			DWORD dwRetval;
+
+			int i = 1;
+
+			//struct addrinfo* result = NULL;
+			struct addrinfo* ptr = NULL;
+			struct addrinfo hints;
+
+			struct sockaddr_in* sockaddr_ipv4;
+			//    struct sockaddr_in6 *sockaddr_ipv6;
+			LPSOCKADDR sockaddr_ip;
+
+			wchar_t ipstringbuffer[46];
+			DWORD ipbufferlength = 46;
+
+			//--------------------------------
+			// Setup the hints address info structure
+			// which is passed to the getaddrinfo() function
+			ZeroMemory(&hints, sizeof(hints));
+			hints.ai_family = AF_UNSPEC;
+			hints.ai_socktype = SOCK_STREAM;
+			hints.ai_protocol = IPPROTO_TCP;
+
+			//--------------------------------
+			// Call getaddrinfo(). If the call succeeds,
+			// the result variable will hold a linked list
+			// of addrinfo structures containing response
+			// information
+			dwRetval = getaddrinfo(pchName, "0", &hints, result);
+			if (dwRetval != 0) {
+				CString local_error_message;
+				local_error_message.Format(L"getaddrinfo failed with error: %d\n", dwRetval);
+				throw local_error_message;
+				return Results;
+			}
+
+			//printf("getaddrinfo returned success\n");
+			// Retrieve each address and print out the hex bytes
+			for (ptr = *result; ptr != NULL; ptr = ptr->ai_next) {
+
+				//printf("getaddrinfo response %d\n", i++);
+				//printf("\tFlags: 0x%x\n", ptr->ai_flags);
+				//printf("\tFamily: ");
+				switch (ptr->ai_family) {
+				case AF_UNSPEC:
+					//printf("Unspecified\n");
+					break;
+				case AF_INET:
+					//printf("AF_INET (IPv4)\n");
+					sockaddr_ipv4 = (struct sockaddr_in*)ptr->ai_addr;
+					char local_buffer[100];
+					inet_ntop(AF_INET, &sockaddr_ipv4->sin_addr, local_buffer, 100);
+					//	IPv4 address 
+					//Result.Format("%s", local_buffer);
+					//Results.push_back(Result);
+					break;
+				case AF_INET6:
+					printf("AF_INET6 (IPv6)\n");
+					// the InetNtop function is available on Windows Vista and later
+					// sockaddr_ipv6 = (struct sockaddr_in6 *) ptr->ai_addr;
+					// printf("\tIPv6 address %s\n",
+					//    InetNtop(AF_INET6, &sockaddr_ipv6->sin6_addr, ipstringbuffer, 46) );
+
+					// We use WSAAddressToString since it is supported on Windows XP and later
+					sockaddr_ip = (LPSOCKADDR)ptr->ai_addr;
+					// The buffer length is changed by each call to WSAAddresstoString
+					// So we need to set it for each iteration through the loop for safety
+					ipbufferlength = 46;
+					iRetval = WSAAddressToString(sockaddr_ip, (DWORD)ptr->ai_addrlen, NULL,
+						ipstringbuffer, &ipbufferlength);
+					if (iRetval)
+					{
+						CString local_error_message;
+						local_error_message.Format(L"WSAAddressToString failed with %u\n", WSAGetLastError());
+						throw local_error_message;
+					}
+					else
+					{
+						//	IPv6 address 
+						//Result.Format("%s", (wchar_t*)ipstringbuffer);
+						Results.push_back(*(LPSOCKADDR6)sockaddr_ip);
+					}
+					break;
+				case AF_NETBIOS:
+					//printf("AF_NETBIOS (NetBIOS)\n");
+					break;
+				default:
+					//printf("Other %ld\n", ptr->ai_family);
+					break;
+				}
+				//printf("\tSocket type: ");
+				switch (ptr->ai_socktype) {
+				case 0:
+					//printf("Unspecified\n");
+					break;
+				case SOCK_STREAM:
+					//printf("SOCK_STREAM (stream)\n");
+					break;
+				case SOCK_DGRAM:
+					//printf("SOCK_DGRAM (datagram) \n");
+					break;
+				case SOCK_RAW:
+					//printf("SOCK_RAW (raw) \n");
+					break;
+				case SOCK_RDM:
+					//printf("SOCK_RDM (reliable message datagram)\n");
+					break;
+				case SOCK_SEQPACKET:
+					//printf("SOCK_SEQPACKET (pseudo-stream packet)\n");
+					break;
+				default:
+					//printf("Other %ld\n", ptr->ai_socktype);
+					break;
+				}
+				//printf("\tProtocol: ");
+				switch (ptr->ai_protocol) {
+				case 0:
+					//printf("Unspecified\n");
+					break;
+				case IPPROTO_TCP:
+					//printf("IPPROTO_TCP (TCP)\n");
+					break;
+				case IPPROTO_UDP:
+					//printf("IPPROTO_UDP (UDP) \n");
+					break;
+				default:
+					//printf("Other %ld\n", ptr->ai_protocol);
+					break;
+				}
+				//printf("\tLength of this sockaddr: %d\n", ptr->ai_addrlen);
+				//printf("\tCanonical name: %s\n", ptr->ai_canonname);
+			}
+
+			//freeaddrinfo(*result);
+
+			return Results;
+		}
+
+		CStringA GetNameInformationIPv6(IN6_ADDR parameter)
+		{
+			int iResult = 0;
+
+			DWORD dwRetval;
+
+			struct sockaddr_in6 saGNI;
+			char hostname[NI_MAXHOST];
+			char servInfo[NI_MAXSERV];
+			u_short port = 27015;
+
+			//-----------------------------------------
+			// Set up sockaddr_in structure which is passed
+			// to the getnameinfo function
+			ZeroMemory(&saGNI, sizeof(sockaddr_in6));
+			saGNI.sin6_family = AF_INET6;
+			saGNI.sin6_addr = parameter;
+			saGNI.sin6_port = htons(port);
+			
+
+			//-----------------------------------------
+			// Call getnameinfo
+			dwRetval = getnameinfo((struct sockaddr*)&saGNI,
+				sizeof(struct sockaddr),
+				hostname,
+				NI_MAXHOST, servInfo, NI_MAXSERV, NI_NUMERICSERV);
+
+			if (dwRetval != 0) {
+				CString local_error;
+				local_error.Format(L"getnameinfo failed with error # %ld\n", WSAGetLastError());
+				throw local_error;
+				return CStringA();
+			}
+			else {
+				//printf("getnameinfo returned hostname = %s\n", hostname);
+				return CStringA(hostname);
+			}
+
+			return CStringA();
+		}
 	}
 }

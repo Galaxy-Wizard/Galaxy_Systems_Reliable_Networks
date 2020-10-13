@@ -5,17 +5,20 @@
 // needs winsock.h in the precompiled headers
 
 #include <string>
+#include <list>
 
 namespace network
 {
 	namespace ip_4
 	{
-
 typedef const struct sockaddr* LPCSOCKADDR;
+typedef const struct sockaddr_in4* SOCKADDR_IN4;
+
+std::list<SOCKADDR_IN4> GetAddressInformationIPv4(const char* pchName, struct addrinfo* *result);
+CStringA GetNameInformationIPv4(IN_ADDR parameter);
 
 class CBlockingSocketException_ip_4 : public CException
 {
-	DECLARE_DYNAMIC(CBlockingSocketException_ip_4)
 public:
 // Constructor
 	CBlockingSocketException_ip_4(wchar_t* pchMessage);
