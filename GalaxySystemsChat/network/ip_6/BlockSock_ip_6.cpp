@@ -1,4 +1,4 @@
-// blocksock.cpp (CBlockingSocketException, CBlockingSocket, CHttpBlockingSocket)
+п»ї// blocksock.cpp (CBlockingSocketException, CBlockingSocket, CHttpBlockingSocket)
 #include "pch.h"
 
 #include "blocksock_ip_6.h"
@@ -34,10 +34,10 @@ namespace network
 
 			wchar_t text[500];
 			if (m_nError == 0) {
-				wsprintf((LPWSTR)text, _T("%s: ошибка"), m_strMessage.GetBuffer());
+				wsprintf((LPWSTR)text, _T("%s: Error"), m_strMessage.GetBuffer());
 			}
 			else {
-				wsprintf((LPWSTR)text, _T("%s: ошибка #%d"), m_strMessage.GetBuffer(), m_nError);
+				wsprintf((LPWSTR)text, _T("%s: Error #%d"), m_strMessage.GetBuffer(), m_nError);
 			}
 			wcsncpy_s((wchar_t*)lpstrError, nMaxError - 1, text, nMaxError - 1);
 			return TRUE;
@@ -58,7 +58,7 @@ namespace network
 		{
 			ASSERT(m_hSocket == NULL);
 			if ((m_hSocket = socket(AF_INET6, nType, nProtocol)) == INVALID_SOCKET) {
-				throw new CBlockingSocketException_ip_6(L"Создание сокета");
+				throw new CBlockingSocketException_ip_6(L"Creating socket");
 			}
 		}
 
@@ -66,7 +66,7 @@ namespace network
 		{
 			ASSERT(m_hSocket != NULL);
 			if (bind(m_hSocket, (sockaddr*)psa, sizeof(sockaddr_in6)) == SOCKET_ERROR) {
-				throw new CBlockingSocketException_ip_6(L"Привязка сокета");
+				throw new CBlockingSocketException_ip_6(L"Binding socket");
 			}
 		}
 
@@ -74,7 +74,7 @@ namespace network
 		{
 			ASSERT(m_hSocket != NULL);
 			if (listen(m_hSocket, 5) == SOCKET_ERROR) {
-				throw new CBlockingSocketException_ip_6(L"Прослушивание на сокете");
+				throw new CBlockingSocketException_ip_6(L"Listening on socket");
 			}
 		}
 
@@ -87,7 +87,7 @@ namespace network
 			if (sConnect == INVALID_SOCKET) {
 				// no exception if the listen was canceled
 				if (WSAGetLastError() != WSAEINTR) {
-					throw new CBlockingSocketException_ip_6(L"Приём на сокете");
+					throw new CBlockingSocketException_ip_6(L"Receiving on socket");
 				}
 				return FALSE;
 			}
@@ -101,7 +101,7 @@ namespace network
 
 			if (closesocket(m_hSocket) == SOCKET_ERROR) {
 				// should be OK to close if closed already
-				throw new CBlockingSocketException_ip_6(L"Закрытие сокета");
+				throw new CBlockingSocketException_ip_6(L"Closing socket");
 			}
 			m_hSocket = NULL;
 		}
@@ -111,7 +111,7 @@ namespace network
 			ASSERT(m_hSocket != NULL);
 			// should timeout by itself
 			if (connect(m_hSocket, (sockaddr*)psa, sizeof(sockaddr_in6)) == SOCKET_ERROR) {
-				throw new CBlockingSocketException_ip_6(L"Соединение");
+				throw new CBlockingSocketException_ip_6(L"Connecting");
 			}
 		}
 
@@ -135,11 +135,11 @@ namespace network
 			FD_SET fd = { 1, m_hSocket };
 			TIMEVAL tv = { nSecs, 0 };
 			if (select(0, NULL, &fd, NULL, &tv) == 0) {
-				throw new CBlockingSocketException_ip_6(L"Тайм аут передачи");
+				throw new CBlockingSocketException_ip_6(L"Sending time out");
 			}
 			int nBytesSent;
 			if ((nBytesSent = send(m_hSocket, pch, nSize, 0)) == SOCKET_ERROR) {
-				throw new CBlockingSocketException_ip_6(L"Передача");
+				throw new CBlockingSocketException_ip_6(L"Sending");
 			}
 			return nBytesSent;
 		}
@@ -150,12 +150,12 @@ namespace network
 			FD_SET fd = { 1, m_hSocket };
 			TIMEVAL tv = { nSecs, 0 };
 			if (select(0, &fd, NULL, NULL, &tv) == 0) {
-				throw new CBlockingSocketException_ip_6(L"Тайм аут получения");
+				throw new CBlockingSocketException_ip_6(L"Receiving time out");
 			}
 
 			int nBytesReceived;
 			if ((nBytesReceived = recv(m_hSocket, pch, nSize, 0)) == SOCKET_ERROR) {
-				throw new CBlockingSocketException_ip_6(L"Получение");
+				throw new CBlockingSocketException_ip_6(L"Receiving");
 			}
 			return nBytesReceived;
 		}
@@ -166,14 +166,14 @@ namespace network
 			FD_SET fd = { 1, m_hSocket };
 			TIMEVAL tv = { nSecs, 0 };
 			if (select(0, &fd, NULL, NULL, &tv) == 0) {
-				throw new CBlockingSocketException_ip_6(L"Тайм аут получения");
+				throw new CBlockingSocketException_ip_6(L"Receiving time out");
 			}
 
 			// input buffer should be big enough for the entire datagram
 			int nFromSize = sizeof(sockaddr_in6);
 			int nBytesReceived = recvfrom(m_hSocket, pch, nSize, 0, (sockaddr*)psa, &nFromSize);
 			if (nBytesReceived == SOCKET_ERROR) {
-				throw new CBlockingSocketException_ip_6(L"Получение датаграммы");
+				throw new CBlockingSocketException_ip_6(L"Receiving datagram");
 			}
 			return nBytesReceived;
 		}
@@ -184,12 +184,12 @@ namespace network
 			FD_SET fd = { 1, m_hSocket };
 			TIMEVAL tv = { nSecs, 0 };
 			if (select(0, NULL, &fd, NULL, &tv) == 0) {
-				throw new CBlockingSocketException_ip_6(L"Тайм аут отправки");
+				throw new CBlockingSocketException_ip_6(L"Sending time out");
 			}
 
 			int nBytesSent = sendto(m_hSocket, pch, nSize, 0, (sockaddr*)psa, sizeof(sockaddr_in6));
 			if (nBytesSent == SOCKET_ERROR) {
-				throw new CBlockingSocketException_ip_6(L"Отправка датаграммы");
+				throw new CBlockingSocketException_ip_6(L"Sending datagram");
 			}
 			return nBytesSent;
 		}
@@ -200,7 +200,7 @@ namespace network
 			// gets the address of the socket at the other end
 			int nLengthAddr = sizeof(sockaddr_in6);
 			if (getpeername(m_hSocket, (sockaddr*)psa, &nLengthAddr) == SOCKET_ERROR) {
-				throw new CBlockingSocketException_ip_6(L"Получение удалённого имени");
+				throw new CBlockingSocketException_ip_6(L"Getting remote name");
 			}
 		}
 
@@ -210,7 +210,7 @@ namespace network
 			// gets the address of the socket at this end
 			int nLengthAddr = sizeof(sockaddr_in6);
 			if (getsockname(m_hSocket, (sockaddr*)psa, &nLengthAddr) == SOCKET_ERROR) {
-				throw new CBlockingSocketException_ip_6(L"Получение имени сокета");
+				throw new CBlockingSocketException_ip_6(L"Getting name of socket");
 			}
 		}
 
@@ -221,15 +221,15 @@ namespace network
 			_itoa_s(ushPort, local_port, 10 - 1, 10);
 
 			struct addrinfo* result = NULL;
-			auto ipv6_addresses = GetAddressInfoormationIPv6(pchName, &result);
+			auto ipv6_addresses = GetAddressInformationIPv6(pchName, &result);
 			if (ipv6_addresses.size() == 0) {
-				throw new CBlockingSocketException_ip_6(L"Получение адреса по имени");
+				throw new CBlockingSocketException_ip_6(L"Getting address by name");
 			}
 			SOCKADDR_IN6 pulAddr = (SOCKADDR_IN6)ipv6_addresses.front();
 
 			if (result == NULL)
 			{
-				throw new CBlockingSocketException_ip_6(L"Получение адреса по имени");
+				throw new CBlockingSocketException_ip_6(L"Getting address by name");
 			}
 			SOCKADDR_IN6 sockTemp;
 			memcpy(&sockTemp, result->ai_addr, sizeof(SOCKADDR_IN6)); // address is already in network byte order
@@ -281,7 +281,7 @@ namespace network
 				pch1 += nBytesThisTime;
 				nBytesThisTime = Receive(m_pReadBuf + m_nReadBuf, nSizeRecv - m_nReadBuf, nSecs);
 				if (nBytesThisTime <= 0) { // sender closed socket or line longer than buffer
-					throw new CBlockingSocketException_ip_6(L"Чтение заголовка");
+					throw new CBlockingSocketException_ip_6(L"Reading header");
 				}
 				m_nReadBuf += nBytesThisTime;
 			} while (TRUE);
@@ -315,7 +315,7 @@ namespace network
 			CString strGmt = CTime::GetCurrentTime().FormatGmt("%m/%d/%y %H:%M:%S GMT");
 			wchar_t text1[500], text2[1500];
 			pe->GetErrorMessage((LPWSTR)text2, 1500);
-			wsprintf((wchar_t*)text1, L"Сетевая ошибка --%s %s -- %s\r\n", pch, text2, strGmt.GetBuffer());
+			wsprintf((wchar_t*)text1, L"Networking error --%s %s -- %s\r\n", pch, text2, strGmt.GetBuffer());
 			::SendMessage((HWND)pParam, EM_SETSEL, (WPARAM)65534, 65535);
 			::SendMessage((HWND)pParam, EM_REPLACESEL, (WPARAM)0, (LPARAM)text1);
 		}
@@ -338,11 +338,11 @@ namespace network
 				const int local_system_error_message_size = local_error_message_size - 250;
 				wchar_t local_system_error_message[local_system_error_message_size];
 
-				wcscpy_s(local_system_error_message, local_system_error_message_size, L"IdnToAscii завершилась неудачей");
+				wcscpy_s(local_system_error_message, local_system_error_message_size, L"IdnToAscii finished with error");
 
 				CString local_time_string = CTime::GetCurrentTime().FormatGmt("%d/%m/%y %H:%M:%S GMT");
 
-				wsprintf((wchar_t*)local_error_message, L"Сетевая ошибка -- %s -- %s\r\n", local_system_error_message, local_time_string.GetBuffer());
+				wsprintf((wchar_t*)local_error_message, L"Networking error -- %s -- %s\r\n", local_system_error_message, local_time_string.GetBuffer());
 
 				MessageBox(0, local_error_message, CString(L"Error"), MB_ICONERROR);
 
@@ -436,14 +436,14 @@ namespace network
 				return (-3);
 			}
 			for (int i = 0; i <= indx && i < list->iAddressCount; ++i) {
-				//нашли адрес
+				// found address
 				if (i == indx) {
 					memcpy(addr,
 						list->Address[i].lpSockaddr, list->Address[i].iSockaddrLength);
 					return (1);
 				}
 			}
-			//адресов не осталось
+			//	finished with addresses
 			return (0);
 #else
 			struct ifconf ifc;
@@ -483,7 +483,7 @@ namespace network
 		}
 
 
-		std::list<SOCKADDR_IN6> GetAddressInfoormationIPv6(const char* pchName, struct addrinfo* *result)
+		std::list<SOCKADDR_IN6> GetAddressInformationIPv6(const char* pchName, struct addrinfo* *result)
 		{
 			std::list<SOCKADDR_IN6> Results;
 			//SOCKADDR_IN6 Result;

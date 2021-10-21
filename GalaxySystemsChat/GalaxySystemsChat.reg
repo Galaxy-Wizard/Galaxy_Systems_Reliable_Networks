@@ -1,9 +1,4 @@
 ﻿REGEDIT
-; Возможно, этот файл .REG используется программой установки.
-;   Если программа SETUP недоступна, записи, расположенные ниже, будут зарегистрированы
-;   в InitInstance автоматически с вызовом в
-;   CWinApp::RegisterShellFileTypes и COleObjectFactory::UpdateRegistryAll.
-
 
 HKEY_CLASSES_ROOT\GalaxySystemsChat.Application = GalaxySystemsChat Application
 

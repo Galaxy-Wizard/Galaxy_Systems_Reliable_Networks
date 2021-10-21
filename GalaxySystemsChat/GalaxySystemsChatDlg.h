@@ -1,40 +1,138 @@
 ﻿
-// GalaxySystemsChatDlg.h: файл заголовка
+// GalaxySystemsChatDlg.h:
 //
 
 #pragma once
 
+#include <list>
+#include <string>
+
+#include "TabPageDialog.h"
+
+class interface_information
+{
+public:
+	interface_information(CString p1, bool p2, bool p3, CWinThread* p4) : ip(p1), thread_running_tcp(p2), thread_running_udp(p3), thread(p4), thread_to_stop_tcp(false), thread_to_stop_udp(false) {}
+	interface_information() : thread_running_tcp(false), thread_running_udp(false), thread(nullptr), thread_to_stop_tcp(false), thread_to_stop_udp(false) {}
+	~interface_information() {}
+	
+	interface_information(const interface_information& p)
+	{
+		ip = p.ip;
+		thread_running_tcp = p.thread_running_tcp;
+		thread_running_udp = p.thread_running_udp;
+		thread = p.thread;
+		thread_to_stop_tcp = p.thread_to_stop_tcp;
+		thread_to_stop_udp = p.thread_to_stop_udp;
+	}
+
+	interface_information& operator=(const interface_information& p)
+	{
+		ip = p.ip;
+		thread_running_tcp = p.thread_running_tcp;
+		thread_running_udp = p.thread_running_udp;
+		thread = p.thread;
+		thread_to_stop_tcp = p.thread_to_stop_tcp;
+		thread_to_stop_udp = p.thread_to_stop_udp;
+
+		return *this;
+	}
+
+	void SetIp(CString p)
+	{
+		ip = p;
+	}
+
+	void SetThreadRunningTcp(bool p)
+	{
+		thread_running_tcp = p;
+	}
+
+	void SetThreadRunningUdp(bool p)
+	{
+		thread_running_udp = p;
+	}
+
+	void SetWinThread(CWinThread* p)
+	{
+		thread = p;
+	}
+
+	void SetThreadToStopTcp(bool p)
+	{
+		thread_to_stop_tcp = p;
+	}
+
+	void SetThreadToStopUdp(bool p)
+	{
+		thread_to_stop_udp = p;
+	}
+
+	CString GetIp()
+	{
+		return ip;
+	}
+
+	bool GetThreadRunningTcp()
+	{
+		return thread_running_tcp;
+	}
+
+	bool GetThreadRunningUdp()
+	{
+		return thread_running_udp;
+	}
+
+	CWinThread* GetWinThread()
+	{
+		return thread;
+	}
+
+	bool GetThreadToStopTcp()
+	{
+		return thread_to_stop_tcp;
+	}
+	
+	bool GetThreadToStopUdp()
+	{
+		return thread_to_stop_udp;
+	}
+
+private:
+	CString ip;
+	bool thread_running_tcp;
+	bool thread_running_udp;
+	CWinThread* thread;
+	bool thread_to_stop_tcp;
+	bool thread_to_stop_udp;
+};
+
 class CGalaxySystemsChatDlgAutoProxy;
 
 
-// Диалоговое окно CGalaxySystemsChatDlg
+// CGalaxySystemsChatDlg
 class CGalaxySystemsChatDlg : public CDialogEx
 {
 	DECLARE_DYNAMIC(CGalaxySystemsChatDlg);
 	friend class CGalaxySystemsChatDlgAutoProxy;
 
-// Создание
 public:
-	CGalaxySystemsChatDlg(CWnd* pParent = nullptr);	// стандартный конструктор
+	CGalaxySystemsChatDlg(CWnd* pParent = nullptr);
 	virtual ~CGalaxySystemsChatDlg();
 
-// Данные диалогового окна
 #ifdef AFX_DESIGN_TIME
 	enum { IDD = IDD_GALAXYSYSTEMSCHAT_DIALOG };
 #endif
 
 	protected:
-	virtual void DoDataExchange(CDataExchange* pDX);	// поддержка DDX/DDV
+	virtual void DoDataExchange(CDataExchange* pDX);
 
-
-// Реализация
 protected:
 	CGalaxySystemsChatDlgAutoProxy* m_pAutoProxy;
 	HICON m_hIcon;
 
 	BOOL CanExit();
 
-	// Созданные функции схемы сообщений
 	virtual BOOL OnInitDialog();
 	afx_msg void OnSysCommand(UINT nID, LPARAM lParam);
 	afx_msg void OnPaint();
@@ -42,5 +140,51 @@ protected:
 	afx_msg void OnClose();
 	virtual void OnOK();
 	virtual void OnCancel();
+
+	afx_msg void OnButton1Click();
+	afx_msg void OnButton2Click();
+	afx_msg void OnButton3Click();
+	afx_msg void OnButton4Click();
+	afx_msg void OnButton5Click();
+	afx_msg void OnButton6Click();
+	afx_msg void OnButton7Click();
+
 	DECLARE_MESSAGE_MAP()
+public:
+	CComboBox Combo1;
+	CComboBox Combo2;
+	CComboBox Combo3;
+	CComboBox Combo4;
+	CButton Check1;
+	CButton Check2;
+	CButton Check3;
+	CButton Check4;
+	CEdit Edit1;
+	CEdit Edit2;
+	CEdit Edit3;
+	CEdit Edit4;
+	CButton Radio1;
+	CButton Radio2;
+	CTabCtrl Tab1;
+
+	std::list<interface_information> listen_interfaces;
+	std::list<interface_information> send_interfaces;
+
+	struct PageStructure
+	{
+		PageStructure() : tab(nullptr) {}
+
+		TabPageDialog* tab;
+		CString tab_name;
+	};
+
+	std::list<PageStructure> tab_pages;
+
+	void ReturnToOurNetworkDefaults();
+	void LoadInterfacesLists();
+
+	afx_msg LRESULT CreateTab(WPARAM w, LPARAM l);
+
+	afx_msg void OnTcnSelchangingStaticTab(NMHDR* pNMHDR, LRESULT* pResult);
+	afx_msg void OnTcnSelchangeStaticTab(NMHDR* pNMHDR, LRESULT* pResult);
 };
