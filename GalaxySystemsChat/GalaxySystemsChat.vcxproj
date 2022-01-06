@@ -196,6 +196,7 @@
     </ResourceCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="CAboutDialog.h" />
     <ClInclude Include="TabPageDialog.h" />
     <ClInclude Include="DlgProxy.h" />
     <ClInclude Include="encrypt\encrypt_xor\encrypt_xor.h" />
@@ -209,6 +210,7 @@
     <ClInclude Include="targetver.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="CAboutDialog.cpp" />
     <ClCompile Include="TabPageDialog.cpp" />
     <ClCompile Include="DlgProxy.cpp" />
     <ClCompile Include="encrypt\encrypt_xor\encrypt_xor.cpp" />

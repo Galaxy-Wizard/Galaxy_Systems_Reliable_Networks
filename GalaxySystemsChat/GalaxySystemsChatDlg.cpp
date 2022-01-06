@@ -17,6 +17,8 @@
 
 #include "TabPageDialog.h"
 
+#include "CAboutDialog.h"
+
 #include "resource.h"
 
 const std::wstring GalaxySystemsChatSingature(L"GalaxySystemsChat");
@@ -56,36 +58,6 @@ UINT __cdecl send_interface_thread_udp(LPVOID pParam);
 #define new DEBUG_NEW
 #endif
 
-class CAboutDlg : public CDialogEx
-{
-public:
-	CAboutDlg();
-
-#ifdef AFX_DESIGN_TIME
-	enum { IDD = IDD_ABOUTBOX };
-#endif
-
-protected:
-	virtual void DoDataExchange(CDataExchange* pDX);
-
-protected:
-	DECLARE_MESSAGE_MAP()
-};
-
-CAboutDlg::CAboutDlg() : CDialogEx(IDD_ABOUTBOX)
-{
-}
-
-void CAboutDlg::DoDataExchange(CDataExchange* pDX)
-{
-	CDialogEx::DoDataExchange(pDX);
-}
-
-BEGIN_MESSAGE_MAP(CAboutDlg, CDialogEx)
-END_MESSAGE_MAP()
-
-
-
 IMPLEMENT_DYNAMIC(CGalaxySystemsChatDlg, CDialogEx);
 
 CGalaxySystemsChatDlg::CGalaxySystemsChatDlg(CWnd* pParent /*=nullptr*/)
@@ -116,6 +88,7 @@ void CGalaxySystemsChatDlg::DoDataExchange(CDataExchange* pDX)
 	DDX_Control(pDX, IDC_COMBO1, Combo1);
 	DDX_Control(pDX, IDC_COMBO2, Combo2);
 	DDX_Control(pDX, IDC_COMBO3, Combo3);
+	DDX_Control(pDX, IDC_COMBO4, Combo4);
 	DDX_Control(pDX, IDC_CHECK1, Check1);
 	DDX_Control(pDX, IDC_CHECK2, Check2);
 	DDX_Control(pDX, IDC_CHECK3, Check3);
@@ -124,10 +97,15 @@ void CGalaxySystemsChatDlg::DoDataExchange(CDataExchange* pDX)
 	DDX_Control(pDX, IDC_EDIT2, Edit2);
 	DDX_Control(pDX, IDC_EDIT3, Edit3);
 	DDX_Control(pDX, IDC_EDIT4, Edit4);
+	DDX_Control(pDX, IDC_EDIT5, Edit5);
+	DDX_Control(pDX, IDC_EDIT6, Edit6);
+	DDX_Control(pDX, IDC_EDIT7, Edit7);
 	DDX_Control(pDX, IDC_RADIO1, Radio1);
 	DDX_Control(pDX, IDC_RADIO2, Radio2);
-	DDX_Control(pDX, IDC_COMBO4, Combo4);
 	DDX_Control(pDX, IDC_STATIC_TAB, Tab1);
+
+	DDX_Control(pDX, IDC_RADIO3, Radio3);
+	DDX_Control(pDX, IDC_RADIO4, Radio4);
 }
 
 #define WM_MYMESSAGE (WM_USER + 100)
@@ -144,6 +122,14 @@ BEGIN_MESSAGE_MAP(CGalaxySystemsChatDlg, CDialogEx)
 	ON_BN_CLICKED(IDC_BUTTON5, OnButton5Click)
 	ON_BN_CLICKED(IDC_BUTTON6, OnButton6Click)
 	ON_BN_CLICKED(IDC_BUTTON7, OnButton7Click)
+
+	ON_BN_CLICKED(IDC_BUTTON8, OnButton8Click)
+	ON_BN_CLICKED(IDC_BUTTON9, OnButton9Click)
+	ON_BN_CLICKED(IDC_BUTTON10, OnButton10Click)
+	ON_BN_CLICKED(IDC_BUTTON13, OnButton13Click)
+	ON_BN_CLICKED(IDC_BUTTON11, OnButton11Click)
+	ON_BN_CLICKED(IDC_BUTTON12, OnButton12Click)
+
 	ON_NOTIFY(TCN_SELCHANGING, IDC_STATIC_TAB, OnTcnSelchangingStaticTab)
 	ON_NOTIFY(TCN_SELCHANGE, IDC_STATIC_TAB, OnTcnSelchangeStaticTab)
 	ON_MESSAGE(WM_MYMESSAGE, CreateTab)
@@ -353,8 +339,8 @@ void CGalaxySystemsChatDlg::OnSysCommand(UINT nID, LPARAM lParam)
 {
 	if ((nID & 0xFFF0) == IDM_ABOUTBOX)
 	{
-		CAboutDlg dlgAbout;
-		dlgAbout.DoModal();
+		CAboutDialog DialogAbout;
+		DialogAbout.DoModal();
 	}
 	else
 	{
@@ -628,6 +614,8 @@ void CGalaxySystemsChatDlg::ReturnToOurNetworkDefaults()
 {
 	Radio1.SetCheck(0);
 	Radio2.SetCheck(1);
+	Radio3.SetCheck(0);
+	Radio4.SetCheck(1);
 
 	Check1.SetCheck(0);
 	Check2.SetCheck(1);
@@ -636,6 +624,7 @@ void CGalaxySystemsChatDlg::ReturnToOurNetworkDefaults()
 
 	Edit3.SetWindowTextW(CString(L"6942"));
 	Edit4.SetWindowTextW(CString(L"8187"));
+	Edit5.SetWindowTextW(CString(L"4269"));
 
 
 	while (Combo4.GetCount() != 0)
@@ -811,7 +800,7 @@ UINT __cdecl listen_interface_thread_tcp(LPVOID pParam)
 						{
 							memset(message_to_xor, 0, (message_length + 1) * sizeof(wchar_t));
 
-							for (auto counter = 0; counter < message_length; counter++)
+							for (size_t counter = 0; counter < message_length; counter++)
 							{
 								message_to_xor[counter] = message.at(counter);
 							}
@@ -975,7 +964,7 @@ UINT __cdecl listen_interface_thread_udp(LPVOID pParam)
 						{
 							memset(message_to_xor, 0, (message_length + 1) * sizeof(wchar_t));
 
-							for (auto counter = 0; counter < message_length; counter++)
+							for (size_t counter = 0; counter < message_length; counter++)
 							{
 								message_to_xor[counter] = message.at(counter);
 							}
@@ -1232,7 +1221,7 @@ LRESULT CGalaxySystemsChatDlg::CreateTab(WPARAM w, LPARAM l)
 				{
 					memset(message_to_xor, 0, (message_length + 1) * sizeof(wchar_t));
 
-					for (auto counter = 0; counter < message_length; counter++)
+					for (size_t counter = 0; counter < message_length; counter++)
 					{
 						message_to_xor[counter] = message->at(counter);
 					}
@@ -1257,3 +1246,88 @@ LRESULT CGalaxySystemsChatDlg::CreateTab(WPARAM w, LPARAM l)
 }
 
 
+
+
+void CGalaxySystemsChatDlg::OnButton8Click()
+{
+	//	Add
+	//AfxMessageBox(L"Add");
+
+	Correspondent correspondent;
+
+	CString Address;
+	CString PortText;
+	CString Protocol;
+
+	Edit6.GetWindowTextW(Address);
+	Edit7.GetWindowTextW(PortText);
+
+	if (Radio3.GetCheck() > 0)
+	{
+		Protocol = CString(L"TCP");
+	}
+
+	if (Radio4.GetCheck() > 0)
+	{
+		Protocol = CString(L"UDP");
+	}
+
+	WORD Port = 0;
+
+	Port = _wtoi(PortText.GetBuffer());
+
+	correspondent.SetAddress(Address);
+	correspondent.SetPort(Port);
+	correspondent.SetProtocol(Protocol);
+
+	for (auto current = correspondents.begin(); current != correspondents.end(); current++)
+	{
+		if (current->GetAddress() == correspondent.GetAddress() && current->GetPort() == correspondent.GetPort() && current->GetProtocol() == correspondent.GetProtocol())
+		{
+			return; //	correspondent already is in list
+		}
+	}
+
+	CString correspondent_line;
+
+	correspondent_line.Format(L"Protocol %s Address %s Port %d", correspondent.GetProtocol().GetBuffer(), correspondent.GetAddress().GetBuffer(), int(correspondent.GetPort()));
+
+	Combo3.AddString(correspondent_line);
+
+	correspondents.push_back(correspondent);
+}
+
+
+void CGalaxySystemsChatDlg::OnButton9Click()
+{
+	//	Edit
+	AfxMessageBox(L"Edit");
+}
+
+
+void CGalaxySystemsChatDlg::OnButton10Click()
+{
+	//	Delete
+	AfxMessageBox(L"Delete");
+}
+
+
+void CGalaxySystemsChatDlg::OnButton13Click()
+{
+	//	Find
+	AfxMessageBox(L"Find");
+}
+
+
+void CGalaxySystemsChatDlg::OnButton11Click()
+{
+	//	Store
+	AfxMessageBox(L"Store");
+}
+
+
+void CGalaxySystemsChatDlg::OnButton12Click()
+{
+	//	Load
+	AfxMessageBox(L"Load");
+}

@@ -48,6 +48,9 @@
     <ClInclude Include="TabPageDialog.h">
       <Filter>Header files</Filter>
     </ClInclude>
+    <ClInclude Include="CAboutDialog.h">
+      <Filter>Header files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="GalaxySystemsChat.cpp">
@@ -72,6 +75,9 @@
       <Filter>Source files</Filter>
     </ClCompile>
     <ClCompile Include="TabPageDialog.cpp">
+      <Filter>Source files</Filter>
+    </ClCompile>
+    <ClCompile Include="CAboutDialog.cpp">
       <Filter>Source files</Filter>
     </ClCompile>
   </ItemGroup>

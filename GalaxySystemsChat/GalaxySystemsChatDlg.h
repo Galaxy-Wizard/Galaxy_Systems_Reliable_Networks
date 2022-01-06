@@ -109,6 +109,24 @@ private:
 
 class CGalaxySystemsChatDlgAutoProxy;
 
+class Correspondent
+{
+public:
+	Correspondent() : address(), port(0) {}
+
+	void SetAddress(CString p) { address = p; }
+	CString GetAddress() { return address; }
+
+	void SetPort(WORD p) { port = p; }
+	WORD GetPort() { return port; }
+
+	void SetProtocol(CString p) { protocol = p; }
+	CString GetProtocol() { return protocol; }
+private:
+	CString protocol;
+	CString address;
+	WORD port;
+};
 
 // CGalaxySystemsChatDlg
 class CGalaxySystemsChatDlg : public CDialogEx
@@ -149,6 +167,13 @@ protected:
 	afx_msg void OnButton6Click();
 	afx_msg void OnButton7Click();
 
+	afx_msg void OnButton8Click();
+	afx_msg void OnButton9Click();
+	afx_msg void OnButton10Click();
+	afx_msg void OnButton13Click();
+	afx_msg void OnButton11Click();
+	afx_msg void OnButton12Click();
+
 	DECLARE_MESSAGE_MAP()
 public:
 	CComboBox Combo1;
@@ -163,12 +188,17 @@ public:
 	CEdit Edit2;
 	CEdit Edit3;
 	CEdit Edit4;
+	CEdit Edit5;
+	CEdit Edit6;
+	CEdit Edit7;
 	CButton Radio1;
 	CButton Radio2;
 	CTabCtrl Tab1;
 
 	std::list<interface_information> listen_interfaces;
 	std::list<interface_information> send_interfaces;
+
+	std::list<Correspondent> correspondents;
 
 	struct PageStructure
 	{
@@ -187,4 +217,6 @@ public:
 
 	afx_msg void OnTcnSelchangingStaticTab(NMHDR* pNMHDR, LRESULT* pResult);
 	afx_msg void OnTcnSelchangeStaticTab(NMHDR* pNMHDR, LRESULT* pResult);
+	CButton Radio3;
+	CButton Radio4;
 };
