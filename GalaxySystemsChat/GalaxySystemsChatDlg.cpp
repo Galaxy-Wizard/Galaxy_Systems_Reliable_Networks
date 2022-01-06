@@ -797,6 +797,32 @@ UINT __cdecl listen_interface_thread_tcp(LPVOID pParam)
 						{
 							message_test += message.at(counter);
 						}
+
+
+						auto xor_code_size = dialog->Combo4.GetCurSel() + 1;
+						CString xor_code_string;
+						dialog->Edit4.GetWindowTextW(xor_code_string);
+						auto xor_code = _wtoi(xor_code_string.GetBuffer());
+
+						auto message_length = message_test.length();
+						auto message_to_xor = new wchar_t[message_length + 1];
+
+						if (message_to_xor != nullptr)
+						{
+							memset(message_to_xor, 0, (message_length + 1) * sizeof(wchar_t));
+
+							for (auto counter = 0; counter < message_length; counter++)
+							{
+								message_to_xor[counter] = message.at(counter);
+							}
+
+							encrypt::encrypt_xor((void*)message_to_xor, message_length * sizeof(wchar_t), xor_code_size, xor_code);
+
+							message_test.assign(message_to_xor);
+
+							delete[]message_to_xor;
+						}
+
 						if (message_test == GalaxySystemsChatSingature)
 						{
 							std::wstring message_to_show;
@@ -935,6 +961,33 @@ UINT __cdecl listen_interface_thread_udp(LPVOID pParam)
 						{
 							message_test += message.at(counter);
 						}
+
+
+						auto xor_code_size = dialog->Combo4.GetCurSel() + 1;
+						CString xor_code_string;
+						dialog->Edit4.GetWindowTextW(xor_code_string);
+						auto xor_code = _wtoi(xor_code_string.GetBuffer());
+
+						auto message_length = message_test.length();
+						auto message_to_xor = new wchar_t[message_length+1];
+
+						if (message_to_xor != nullptr)
+						{
+							memset(message_to_xor, 0, (message_length + 1) * sizeof(wchar_t));
+
+							for (auto counter = 0; counter < message_length; counter++)
+							{
+								message_to_xor[counter] = message.at(counter);
+							}
+
+							encrypt::encrypt_xor((void*)message_to_xor, message_length * sizeof(wchar_t), xor_code_size, xor_code);
+
+							message_test.assign(message_to_xor);
+
+							delete[]message_to_xor;
+						}
+
+
 						if (message_test == GalaxySystemsChatSingature)
 						{
 							std::wstring message_to_show;
@@ -945,11 +998,18 @@ UINT __cdecl listen_interface_thread_udp(LPVOID pParam)
 
 							std::string CurrentTabName;
 							CurrentTabName += "UDP ";
+							
+							CurrentTabName += "Address ";
+
 							CurrentTabName += socket_remote_endpoint.address().to_string();
 							CurrentTabName += " ";
 							char buffer[20];
 							memset(buffer, 0, 20 * sizeof(char));
-							CurrentTabName += _itoa_s(socket_remote_endpoint.port(), buffer, 20, 10);
+							_itoa_s(socket_remote_endpoint.port(), buffer, 20, 10);
+
+							CurrentTabName += "Port ";
+
+							CurrentTabName += buffer;
 
 							dialog->SendMessage(WM_MYMESSAGE, reinterpret_cast<WPARAM>(&CurrentTabName), reinterpret_cast<LPARAM>(&message_to_show));
 
@@ -1156,10 +1216,35 @@ LRESULT CGalaxySystemsChatDlg::CreateTab(WPARAM w, LPARAM l)
 				CTime current_time = CTime::GetCurrentTime();
 				CString time_string = current_time.Format(L"%A, %B %d, %Y %H:%M:%S");
 
-				private_chat_text += L"Incoming message in " + time_string;
+				private_chat_text += L"Incoming message on " + time_string;
 				private_chat_text += L" ";
 				private_chat_text += L"\"";
-				private_chat_text += message->c_str();
+
+				auto xor_code_size = Combo4.GetCurSel()+1;
+				CString xor_code_string;
+				Edit4.GetWindowTextW(xor_code_string);
+				auto xor_code = _wtoi(xor_code_string.GetBuffer());
+
+				auto message_length = message->length();
+				auto message_to_xor = new wchar_t[message_length+1];
+
+				if (message_to_xor != nullptr)
+				{
+					memset(message_to_xor, 0, (message_length + 1) * sizeof(wchar_t));
+
+					for (auto counter = 0; counter < message_length; counter++)
+					{
+						message_to_xor[counter] = message->at(counter);
+					}
+
+					encrypt::encrypt_xor((void*)message_to_xor, message_length * sizeof(wchar_t), xor_code_size, xor_code);
+
+					private_chat_text += message_to_xor;
+
+					delete[]message_to_xor;
+				}
+
+				//private_chat_text += message->c_str();
 				private_chat_text += L"\"";
 				private_chat_text += L"\r\n";
 
