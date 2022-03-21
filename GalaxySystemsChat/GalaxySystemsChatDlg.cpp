@@ -542,7 +542,133 @@ void CGalaxySystemsChatDlg::OnButton4Click()
 
 void CGalaxySystemsChatDlg::OnButton5Click()
 {
+	CString SourceInterface;
+	CString SourcePort;
 
+	CString Message;
+
+	CString Correspondent;
+
+	correspondents;
+
+	Combo2.GetWindowTextW(SourceInterface);
+	Edit5.GetWindowTextW(SourcePort);
+
+	Edit1.GetWindowTextW(Message);
+
+	Combo3.GetWindowTextW(Correspondent);
+
+	CString ProtocolName;
+
+	CString Address;
+
+	CString Port;
+
+	for (int counter = 0; counter < Correspondent.GetLength(); counter++)
+	{
+		//correspondent line format: "Protocol %s Address %s Port %d";
+
+		if (Correspondent.Find(L"Protocol", 0) == -1)
+		{
+			return;
+		}
+
+		if (Correspondent.Find(L"Address", 0) == -1)
+		{
+			return;
+		}
+
+		if (Correspondent.Find(L"Port", 0) == -1)
+		{
+			return;
+		}
+
+		if ((counter = Correspondent.Find(L" ", counter)) == -1)
+		{
+			return;
+		}
+		else
+		{
+			counter++;
+
+			for (; counter < Correspondent.GetLength(); counter++)
+			{
+				auto Symbol = Correspondent.GetAt(counter);
+				if (Symbol != L' ')
+				{
+					ProtocolName += Symbol;
+				}
+				else
+				{
+					break;
+				}
+			}
+
+			counter++;
+
+			if ((counter = Correspondent.Find(L" ", counter)) == -1)
+			{
+				return;
+			}
+
+			counter++;
+
+			for (; counter < Correspondent.GetLength(); counter++)
+			{
+				auto Symbol = Correspondent.GetAt(counter);
+				if (Symbol != L' ')
+				{
+					Address += Symbol;
+				}
+				else
+				{
+					break;
+				}
+			}
+
+			counter++;
+
+			if ((counter = Correspondent.Find(L" ", counter)) == -1)
+			{
+				return;
+			}
+
+			counter++;
+
+			for (; counter < Correspondent.GetLength(); counter++)
+			{
+				auto Symbol = Correspondent.GetAt(counter);
+				if (Symbol != L' ')
+				{
+					Port += Symbol;
+				}
+				else
+				{
+					break;
+				}
+			}
+
+			break;
+		}
+
+		break;
+	}
+
+	std::wstring message = Message.GetBuffer();
+
+	if (ProtocolName == CString(L"TCP"))
+	{
+		//tcp::socket socket;
+		//send_tcp(socket, message);
+	}
+
+	if (ProtocolName == CString(L"UDP"))
+	{
+		//udp::socket socket;
+		//ip::udp::endpoint receiver_end_point;
+
+		//send_udp(socket, message, receiver_end_point);
+	}
 }
 
 void CGalaxySystemsChatDlg::OnButton6Click()
@@ -958,7 +1084,7 @@ UINT __cdecl listen_interface_thread_udp(LPVOID pParam)
 						auto xor_code = _wtoi(xor_code_string.GetBuffer());
 
 						auto message_length = message_test.length();
-						auto message_to_xor = new wchar_t[message_length+1];
+						auto message_to_xor = new wchar_t[message_length + 1];
 
 						if (message_to_xor != nullptr)
 						{
@@ -987,7 +1113,7 @@ UINT __cdecl listen_interface_thread_udp(LPVOID pParam)
 
 							std::string CurrentTabName;
 							CurrentTabName += "UDP ";
-							
+
 							CurrentTabName += "Address ";
 
 							CurrentTabName += socket_remote_endpoint.address().to_string();
@@ -1095,7 +1221,7 @@ void CGalaxySystemsChatDlg::OnTcnSelchangingStaticTab(NMHDR* pNMHDR, LRESULT* pR
 	int iTab = Tab1.GetCurSel();
 	CWnd* pWnd = nullptr;
 	auto tpi = tab_pages.begin();
-	for (auto counter = iTab+1; counter != 0; counter--)
+	for (auto counter = iTab + 1; counter != 0; counter--)
 	{
 		if (tpi != tab_pages.end())
 		{
@@ -1116,7 +1242,7 @@ void CGalaxySystemsChatDlg::OnTcnSelchangeStaticTab(NMHDR* pNMHDR, LRESULT* pRes
 	int iTab = Tab1.GetCurSel();
 	CWnd* pWnd = nullptr;
 	auto tpi = tab_pages.begin();
-	for(auto counter = iTab+1; counter !=0; counter--)
+	for (auto counter = iTab + 1; counter != 0; counter--)
 	{
 		if (tpi != tab_pages.end())
 		{
@@ -1134,8 +1260,8 @@ void CGalaxySystemsChatDlg::OnTcnSelchangeStaticTab(NMHDR* pNMHDR, LRESULT* pRes
 
 LRESULT CGalaxySystemsChatDlg::CreateTab(WPARAM w, LPARAM l)
 {
-	std::string *tab_name = reinterpret_cast<std::string*>(w);
-	std::wstring *message = reinterpret_cast<std::wstring*>(l);
+	std::string* tab_name = reinterpret_cast<std::string*>(w);
+	std::wstring* message = reinterpret_cast<std::wstring*>(l);
 
 	if (tab_name == nullptr)
 	{
@@ -1149,7 +1275,7 @@ LRESULT CGalaxySystemsChatDlg::CreateTab(WPARAM w, LPARAM l)
 
 	bool add_tab = true;
 
-	for(auto tab_pages_iterator = tab_pages.begin(); tab_pages_iterator != tab_pages.end(); tab_pages_iterator++)
+	for (auto tab_pages_iterator = tab_pages.begin(); tab_pages_iterator != tab_pages.end(); tab_pages_iterator++)
 	{
 		auto tp = *tab_pages_iterator;
 		if (tp.tab != nullptr)
@@ -1209,13 +1335,13 @@ LRESULT CGalaxySystemsChatDlg::CreateTab(WPARAM w, LPARAM l)
 				private_chat_text += L" ";
 				private_chat_text += L"\"";
 
-				auto xor_code_size = Combo4.GetCurSel()+1;
+				auto xor_code_size = Combo4.GetCurSel() + 1;
 				CString xor_code_string;
 				Edit4.GetWindowTextW(xor_code_string);
 				auto xor_code = _wtoi(xor_code_string.GetBuffer());
 
 				auto message_length = message->length();
-				auto message_to_xor = new wchar_t[message_length+1];
+				auto message_to_xor = new wchar_t[message_length + 1];
 
 				if (message_to_xor != nullptr)
 				{
