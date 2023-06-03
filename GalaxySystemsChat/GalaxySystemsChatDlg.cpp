@@ -29,6 +29,59 @@ using boost::asio::ip::udp;
 using namespace boost::asio;
 using ip::tcp;
 
+
+struct ClientTcp
+{
+	boost::asio::io_service& io_service;
+	boost::asio::ip::tcp::socket socket;
+
+	ClientTcp(boost::asio::io_service& ios, std::string const& host, std::string const& port)
+		: io_service(ios), socket(io_service)
+	{
+		boost::asio::ip::tcp::resolver resolver(io_service);
+		boost::asio::ip::tcp::resolver::query tcp_query(host, port);
+		boost::asio::ip::tcp::resolver::iterator endpoint = resolver.resolve(tcp_query);
+		boost::asio::connect(this->socket, endpoint);
+	};
+
+	void send(std::vector<BYTE> const& message)
+	{
+		socket.send(boost::asio::buffer(message));
+	}
+
+	~ClientTcp()
+	{
+		socket.close();
+	}
+};
+
+struct ClientUdp
+{
+	boost::asio::io_service& io_service;
+	boost::asio::ip::udp::socket socket;
+
+	ClientUdp(boost::asio::io_service& ios, std::string const& host, std::string const& port)
+		: io_service(ios), socket(io_service)
+	{
+		boost::asio::ip::udp::resolver resolver(io_service);
+		boost::asio::ip::udp::resolver::query udp_query(host, port);
+		boost::asio::ip::udp::resolver::iterator endpoint = resolver.resolve(udp_query);
+		boost::asio::connect(this->socket, endpoint);
+	};
+
+	void send(std::vector<BYTE> const& message)
+	{
+		socket.send(boost::asio::buffer(message));
+	}
+
+	~ClientUdp()
+	{
+		socket.close();
+	}
+};
+
+
+
 struct listen_interface_thread_parameters
 {
 	listen_interface_thread_parameters()
@@ -115,20 +168,20 @@ BEGIN_MESSAGE_MAP(CGalaxySystemsChatDlg, CDialogEx)
 	ON_WM_CLOSE()
 	ON_WM_PAINT()
 	ON_WM_QUERYDRAGICON()
-	ON_BN_CLICKED(IDC_BUTTON1, OnButton1Click)
-	ON_BN_CLICKED(IDC_BUTTON2, OnButton2Click)
-	ON_BN_CLICKED(IDC_BUTTON3, OnButton3Click)
-	ON_BN_CLICKED(IDC_BUTTON4, OnButton4Click)
-	ON_BN_CLICKED(IDC_BUTTON5, OnButton5Click)
-	ON_BN_CLICKED(IDC_BUTTON6, OnButton6Click)
-	ON_BN_CLICKED(IDC_BUTTON7, OnButton7Click)
+	ON_BN_CLICKED(IDC_BUTTON1, OnButton1Click)		//	Listen
+	ON_BN_CLICKED(IDC_BUTTON2, OnButton2Click)		//	Stop listening
+	ON_BN_CLICKED(IDC_BUTTON3, OnButton3Click)		//	Select send interface
+	ON_BN_CLICKED(IDC_BUTTON4, OnButton4Click)		//	Stop sending interface
+	ON_BN_CLICKED(IDC_BUTTON5, OnButton5Click)		//	Send
+	ON_BN_CLICKED(IDC_BUTTON6, OnButton6Click)		//	Update
+	ON_BN_CLICKED(IDC_BUTTON7, OnButton7Click)		//	Load default settings
 
-	ON_BN_CLICKED(IDC_BUTTON8, OnButton8Click)
-	ON_BN_CLICKED(IDC_BUTTON9, OnButton9Click)
-	ON_BN_CLICKED(IDC_BUTTON10, OnButton10Click)
-	ON_BN_CLICKED(IDC_BUTTON13, OnButton13Click)
-	ON_BN_CLICKED(IDC_BUTTON11, OnButton11Click)
-	ON_BN_CLICKED(IDC_BUTTON12, OnButton12Click)
+	ON_BN_CLICKED(IDC_BUTTON8, OnButton8Click)		//	Add correspondent
+	ON_BN_CLICKED(IDC_BUTTON9, OnButton9Click)		//	Edit correspondent
+	ON_BN_CLICKED(IDC_BUTTON10, OnButton10Click)	//	Delete correspondent
+	ON_BN_CLICKED(IDC_BUTTON13, OnButton13Click)	//	Find correspondent
+	ON_BN_CLICKED(IDC_BUTTON11, OnButton11Click)	//	Store correspondents
+	ON_BN_CLICKED(IDC_BUTTON12, OnButton12Click)	//	Load correspondents
 
 	ON_NOTIFY(TCN_SELCHANGING, IDC_STATIC_TAB, OnTcnSelchangingStaticTab)
 	ON_NOTIFY(TCN_SELCHANGE, IDC_STATIC_TAB, OnTcnSelchangeStaticTab)
@@ -405,6 +458,7 @@ BOOL CGalaxySystemsChatDlg::CanExit()
 	return TRUE;
 }
 
+//	Listen
 void CGalaxySystemsChatDlg::OnButton1Click()
 {
 	//	Listen
@@ -486,6 +540,7 @@ void CGalaxySystemsChatDlg::OnButton1Click()
 	}
 }
 
+//	Stop listening
 void CGalaxySystemsChatDlg::OnButton2Click()
 {
 	//	Stop listening
@@ -530,16 +585,19 @@ void CGalaxySystemsChatDlg::OnButton2Click()
 	}
 }
 
+//	Select send interface
 void CGalaxySystemsChatDlg::OnButton3Click()
 {
 
 }
 
+//	Stop sending interface
 void CGalaxySystemsChatDlg::OnButton4Click()
 {
 
 }
 
+//	Send
 void CGalaxySystemsChatDlg::OnButton5Click()
 {
 	CString SourceInterface;
@@ -549,14 +607,16 @@ void CGalaxySystemsChatDlg::OnButton5Click()
 
 	CString Correspondent;
 
-	correspondents;
-
 	Combo2.GetWindowTextW(SourceInterface);
 	Edit5.GetWindowTextW(SourcePort);
 
 	Edit1.GetWindowTextW(Message);
 
 	Combo3.GetWindowTextW(Correspondent);
+
+	CString XorCode;
+
+	Edit4.GetWindowTextW(XorCode);
 
 	CString ProtocolName;
 
@@ -654,23 +714,87 @@ void CGalaxySystemsChatDlg::OnButton5Click()
 		break;
 	}
 
-	std::wstring message = Message.GetBuffer();
+	std::wstring message = GalaxySystemsChatSingature + Message.GetBuffer();
 
-	if (ProtocolName == CString(L"TCP"))
+	auto message_size = message.length() * sizeof(wchar_t);
+
+	unsigned char* encrypted_message = new unsigned char[message_size + sizeof(wchar_t)];
+
+	if (encrypted_message != nullptr)
 	{
-		//tcp::socket socket;
-		//send_tcp(socket, message);
-	}
+		ZeroMemory(encrypted_message, message_size + sizeof(wchar_t));
 
-	if (ProtocolName == CString(L"UDP"))
-	{
-		//udp::socket socket;
-		//ip::udp::endpoint receiver_end_point;
+		for (size_t counter = 0; counter < message.length(); counter++)
+		{
+			wchar_t symbol = message.at(counter);
 
-		//send_udp(socket, message, receiver_end_point);
+			auto high_byte = unsigned char(symbol >> 8);
+			auto low_byte = unsigned char(symbol & 0x00FF);
+
+			encrypted_message[counter * sizeof(wchar_t) + 1] = high_byte;
+			encrypted_message[counter * sizeof(wchar_t) + 0] = low_byte;
+		}
+
+		size_t atom_data_size = XorCode.GetLength() * sizeof(wchar_t);
+
+		unsigned char* xor_code = new unsigned char[atom_data_size];
+
+		if (xor_code != nullptr)
+		{
+			ZeroMemory(xor_code, atom_data_size);
+
+			for (int counter = 0; counter < XorCode.GetLength(); counter++)
+			{
+				wchar_t symbol = XorCode.GetAt(counter);
+
+				auto high_byte = unsigned char(symbol >> 8);
+				auto low_byte = unsigned char(symbol & 0x00FF);
+
+				xor_code[counter * sizeof(wchar_t) + 1] = high_byte;
+				xor_code[counter * sizeof(wchar_t) + 0] = low_byte;
+			}
+
+			encrypt::encrypt_xor(encrypted_message, message_size, atom_data_size, xor_code);
+
+
+			std::vector<BYTE> message;
+
+			for (size_t counter = 0; counter < message_size; counter++)
+			{
+				BYTE symbol = encrypted_message[counter];
+
+				message.push_back(symbol);
+			}
+
+			std::string address(CStringA(Address).GetBuffer());
+			std::string port(CStringA(Port).GetBuffer());
+
+			if (ProtocolName == CString(L"TCP"))
+			{
+				boost::asio::io_service ios;
+
+				ClientTcp client(ios, address, port);
+
+				client.send(message);
+			}
+
+			if (ProtocolName == CString(L"UDP"))
+			{
+				boost::asio::io_service ios;
+
+				ClientUdp client(ios, address, port);
+
+				client.send(message);
+			}
+
+			delete[] xor_code;
+		}
+
+		delete[] encrypted_message;
 	}
 }
 
+//	Update
 void CGalaxySystemsChatDlg::OnButton6Click()
 {
 	//	Enumerate IPv4 and IPv6 interfaces
@@ -772,6 +896,7 @@ void CGalaxySystemsChatDlg::ReturnToOurNetworkDefaults()
 	Combo4.SetCurSel(1);
 }
 
+//	Load default settings
 void CGalaxySystemsChatDlg::OnButton7Click()
 {
 	ReturnToOurNetworkDefaults();
@@ -827,15 +952,21 @@ void wait_handler(const boost::system::error_code& error)
 {
 }
 
-std::wstring receive_tcp(tcp::socket& socket)
+std::vector<BYTE> receive_tcp(tcp::socket& socket)
 {
 	const size_t CONST_BUFFER_SIZE = 500;
-	wchar_t buf[CONST_BUFFER_SIZE];
-	memset(buf, 0, CONST_BUFFER_SIZE * sizeof(wchar_t));
+	BYTE buf[CONST_BUFFER_SIZE];
+	memset(buf, 0, CONST_BUFFER_SIZE);
 
-	socket.receive(buffer(buf));
+	size_t received_bytes = socket.receive(buffer(buf));
 
-	std::wstring data = buf;
+	std::vector<BYTE> data;
+
+	for (size_t counter = 0; counter < received_bytes; counter++)
+	{
+		data.push_back(buf[counter]);
+	}
+
 	return data;
 }
 
@@ -845,15 +976,21 @@ void send_tcp(tcp::socket& socket, const std::wstring& message)
 	socket.send(buffer(message));
 }
 
-std::wstring receive_udp(udp::socket& socket, udp::endpoint& socket_remote_endpoint)
+std::vector<BYTE> receive_udp(udp::socket& socket, udp::endpoint& socket_remote_endpoint)
 {
 	const size_t CONST_BUFFER_SIZE = 500;
-	wchar_t buf[CONST_BUFFER_SIZE];
-	memset(buf, 0, CONST_BUFFER_SIZE * sizeof(wchar_t));
+	BYTE buf[CONST_BUFFER_SIZE];
+	memset(buf, 0, CONST_BUFFER_SIZE);
 
-	socket.receive_from(boost::asio::buffer(buf), socket_remote_endpoint);
+	size_t received_bytes = socket.receive_from(boost::asio::buffer(buf), socket_remote_endpoint);
 
-	std::wstring data = buf;
+	std::vector<BYTE> data;
+
+	for (size_t counter = 0; counter < received_bytes; counter++)
+	{
+		data.push_back(buf[counter]);
+	}
+
 	return data;
 }
 
@@ -883,29 +1020,31 @@ UINT __cdecl listen_interface_thread_tcp(LPVOID pParam)
 
 		auto current_interface = dialog->listen_interfaces.end();
 
-		boost::asio::io_service io_service;
-
-		//listen for new connection
-		tcp::acceptor acceptor_(io_service, tcp::endpoint(ip::address::from_string(CStringA(ii.GetIp())), parameters->port));
-
-		//socket creation 
-		tcp::socket socket_(io_service);
-
-		//waiting for connection
-		acceptor_.accept(socket_);
-
-		socket_.set_option(boost::asio::detail::socket_option::integer<SOL_SOCKET, SO_RCVTIMEO>{ 500 });
-
 		for (;;)
 		{
+
+			boost::asio::io_service io_service;
+
+			//listen for new connection
+			tcp::acceptor acceptor_(io_service, tcp::endpoint(ip::address::from_string(CStringA(ii.GetIp())), parameters->port));
+
+			//socket creation 
+			tcp::socket socket_(io_service);
+
+			//waiting for connection
+			acceptor_.accept(socket_);
+
+			socket_.set_option(boost::asio::detail::socket_option::integer<SOL_SOCKET, SO_RCVTIMEO>{ 500 });
+
+		
 			try
 			{
 				//read operation
-				std::wstring message = receive_tcp(socket_);
+				std::vector<BYTE> message = receive_tcp(socket_);
 
-				if (message.length() != 0)
+				if (message.size() != 0)
 				{
-					if (message.length() > GalaxySystemsChatSingature.length())
+					if (message.size() > GalaxySystemsChatSingature.length())
 					{
 						std::wstring message_test;
 						for (size_t counter = 0; counter < GalaxySystemsChatSingature.length(); counter++)
@@ -917,53 +1056,74 @@ UINT __cdecl listen_interface_thread_tcp(LPVOID pParam)
 						auto xor_code_size = dialog->Combo4.GetCurSel() + 1;
 						CString xor_code_string;
 						dialog->Edit4.GetWindowTextW(xor_code_string);
-						auto xor_code = _wtoi(xor_code_string.GetBuffer());
 
-						auto message_length = message_test.length();
-						auto message_to_xor = new wchar_t[message_length + 1];
+						size_t atom_data_size = xor_code_string.GetLength() * sizeof(wchar_t);
 
-						if (message_to_xor != nullptr)
+						unsigned char* xor_code = new unsigned char[atom_data_size];
+
+						if (xor_code != nullptr)
 						{
-							memset(message_to_xor, 0, (message_length + 1) * sizeof(wchar_t));
+							ZeroMemory(xor_code, atom_data_size);
 
-							for (size_t counter = 0; counter < message_length; counter++)
+							for (int counter = 0; counter < xor_code_string.GetLength(); counter++)
 							{
-								message_to_xor[counter] = message.at(counter);
+								wchar_t symbol = xor_code_string.GetAt(counter);
+
+								auto high_byte = unsigned char(symbol >> 8);
+								auto low_byte = unsigned char(symbol & 0x00FF);
+
+								xor_code[counter * sizeof(wchar_t) + 1] = high_byte;
+								xor_code[counter * sizeof(wchar_t) + 0] = low_byte;
 							}
 
-							encrypt::encrypt_xor((void*)message_to_xor, message_length * sizeof(wchar_t), xor_code_size, xor_code);
+							auto message_size = message.size();
+							auto message_to_xor = new BYTE[message_size + sizeof(wchar_t)];
 
-							message_test.assign(message_to_xor);
-
-							delete[]message_to_xor;
-						}
-
-						if (message_test == GalaxySystemsChatSingature)
-						{
-							std::wstring message_to_show;
-							for (size_t counter = GalaxySystemsChatSingature.length(); counter < message.length(); counter++)
+							if (message_to_xor != nullptr)
 							{
-								message_to_show += message.at(counter);
+								memset(message_to_xor, 0, message_size + sizeof(wchar_t));
+
+								for (size_t counter = 0; counter < message_size; counter++)
+								{
+									message_to_xor[counter] = message.at(counter);
+								}
+
+								encrypt::encrypt_xor((void*)message_to_xor, message_size, atom_data_size, xor_code);
+
+								message_test.assign((wchar_t*)message_to_xor);
+
+								delete[]message_to_xor;
 							}
 
-							auto socket_remote_endpoint = socket_.remote_endpoint();
+							if (message_test.substr(0, GalaxySystemsChatSingature.length()) == GalaxySystemsChatSingature)
+							{
+								std::wstring message_to_show;
+								message_to_show = message_test.substr(GalaxySystemsChatSingature.length());
 
-							std::string CurrentTabName;
-							CurrentTabName += "TCP ";
-							CurrentTabName += socket_remote_endpoint.address().to_string();
-							CurrentTabName += " ";
-							char buffer[20];
-							memset(buffer, 0, 20 * sizeof(char));
-							CurrentTabName += _itoa_s(socket_remote_endpoint.port(), buffer, 20, 10);
+								auto socket_remote_endpoint = socket_.remote_endpoint();
 
-							dialog->SendMessage(WM_MYMESSAGE, reinterpret_cast<WPARAM>(&CurrentTabName), reinterpret_cast<LPARAM>(&message_to_show));
+								std::string CurrentTabName;
+								CurrentTabName += "TCP ";
 
-							//CString current_chat_text;
-							//dialog->Edit2.GetWindowTextW(current_chat_text);
+								CurrentTabName += "Address ";
 
-							//current_chat_text += message_to_show.c_str();
-							//current_chat_text += L"\r\n";
-							//dialog->Edit2.SetWindowTextW(current_chat_text);
+								CurrentTabName += socket_remote_endpoint.address().to_string();
+								//CurrentTabName += " ";
+								//char buffer[20];
+								//memset(buffer, 0, 20 * sizeof(char));
+								//CurrentTabName += _itoa_s(socket_remote_endpoint.port(), buffer, 20, 10);
+
+								dialog->SendMessage(WM_MYMESSAGE, reinterpret_cast<WPARAM>(&CurrentTabName), reinterpret_cast<LPARAM>(&message_to_show));
+
+								//CString current_chat_text;
+								//dialog->Edit2.GetWindowTextW(current_chat_text);
+
+								//current_chat_text += message_to_show.c_str();
+								//current_chat_text += L"\r\n";
+								//dialog->Edit2.SetWindowTextW(current_chat_text);
+							}
+
+							delete[] xor_code;
 						}
 					}
 				}
@@ -979,6 +1139,11 @@ UINT __cdecl listen_interface_thread_tcp(LPVOID pParam)
 				current_chat_text += e.what() + CString(L"\r\n");
 				dialog->Edit2.SetWindowTextW(current_chat_text);
 				//*/
+			}
+
+			if (socket_.is_open())
+			{
+				socket_.close();
 			}
 
 			for (auto i = dialog->listen_interfaces.begin(); i != dialog->listen_interfaces.end(); i++)
@@ -1005,11 +1170,6 @@ UINT __cdecl listen_interface_thread_tcp(LPVOID pParam)
 			{
 				break;
 			}
-		}
-
-		if (socket_.is_open())
-		{
-			socket_.close();
 		}
 	}
 
@@ -1065,11 +1225,11 @@ UINT __cdecl listen_interface_thread_udp(LPVOID pParam)
 			{
 				udp::endpoint socket_remote_endpoint;
 				//read operation
-				std::wstring message = receive_udp(socket_, socket_remote_endpoint);
+				std::vector<BYTE> message = receive_udp(socket_, socket_remote_endpoint);
 
-				if (message.length() != 0)
+				if (message.size() != 0)
 				{
-					if (message.length() > GalaxySystemsChatSingature.length())
+					if (message.size() > GalaxySystemsChatSingature.length())
 					{
 						std::wstring message_test;
 						for (size_t counter = 0; counter < GalaxySystemsChatSingature.length(); counter++)
@@ -1081,59 +1241,77 @@ UINT __cdecl listen_interface_thread_udp(LPVOID pParam)
 						auto xor_code_size = dialog->Combo4.GetCurSel() + 1;
 						CString xor_code_string;
 						dialog->Edit4.GetWindowTextW(xor_code_string);
-						auto xor_code = _wtoi(xor_code_string.GetBuffer());
 
-						auto message_length = message_test.length();
-						auto message_to_xor = new wchar_t[message_length + 1];
+						size_t atom_data_size = xor_code_string.GetLength() * sizeof(wchar_t);
 
-						if (message_to_xor != nullptr)
+						unsigned char* xor_code = new unsigned char[atom_data_size];
+
+						if (xor_code != nullptr)
 						{
-							memset(message_to_xor, 0, (message_length + 1) * sizeof(wchar_t));
+							ZeroMemory(xor_code, atom_data_size);
 
-							for (size_t counter = 0; counter < message_length; counter++)
+							for (int counter = 0; counter < xor_code_string.GetLength(); counter++)
 							{
-								message_to_xor[counter] = message.at(counter);
+								wchar_t symbol = xor_code_string.GetAt(counter);
+
+								auto high_byte = unsigned char(symbol >> 8);
+								auto low_byte = unsigned char(symbol & 0x00FF);
+
+								xor_code[counter * sizeof(wchar_t) + 1] = high_byte;
+								xor_code[counter * sizeof(wchar_t) + 0] = low_byte;
 							}
 
-							encrypt::encrypt_xor((void*)message_to_xor, message_length * sizeof(wchar_t), xor_code_size, xor_code);
+							auto message_size = message.size();
+							auto message_to_xor = new BYTE[message_size + sizeof(wchar_t)];
 
-							message_test.assign(message_to_xor);
-
-							delete[]message_to_xor;
-						}
-
-
-						if (message_test == GalaxySystemsChatSingature)
-						{
-							std::wstring message_to_show;
-							for (size_t counter = GalaxySystemsChatSingature.length(); counter < message.length(); counter++)
+							if (message_to_xor != nullptr)
 							{
-								message_to_show += message.at(counter);
+								memset(message_to_xor, 0, message_size + sizeof(wchar_t));
+
+								for (size_t counter = 0; counter < message_size; counter++)
+								{
+									message_to_xor[counter] = message.at(counter);
+								}
+
+								encrypt::encrypt_xor((void*)message_to_xor, message_size, atom_data_size, xor_code);
+
+								message_test.assign((wchar_t*)message_to_xor);
+
+								delete[]message_to_xor;
 							}
 
-							std::string CurrentTabName;
-							CurrentTabName += "UDP ";
 
-							CurrentTabName += "Address ";
+							if (message_test.substr(0, GalaxySystemsChatSingature.length()) == GalaxySystemsChatSingature)
+							{
+								std::wstring message_to_show;
+								message_to_show = message_test.substr(GalaxySystemsChatSingature.length());
 
-							CurrentTabName += socket_remote_endpoint.address().to_string();
-							CurrentTabName += " ";
-							char buffer[20];
-							memset(buffer, 0, 20 * sizeof(char));
-							_itoa_s(socket_remote_endpoint.port(), buffer, 20, 10);
+								std::string CurrentTabName;
+								CurrentTabName += "UDP ";
 
-							CurrentTabName += "Port ";
+								CurrentTabName += "Address ";
 
-							CurrentTabName += buffer;
+								CurrentTabName += socket_remote_endpoint.address().to_string();
+								//CurrentTabName += " ";
+								//char buffer[20];
+								//memset(buffer, 0, 20 * sizeof(char));
+								//_itoa_s(socket_remote_endpoint.port(), buffer, 20, 10);
 
-							dialog->SendMessage(WM_MYMESSAGE, reinterpret_cast<WPARAM>(&CurrentTabName), reinterpret_cast<LPARAM>(&message_to_show));
+								//CurrentTabName += "Port ";
 
-							//CString current_chat_text;
-							//dialog->Edit2.GetWindowTextW(current_chat_text);
+								//CurrentTabName += buffer;
 
-							//current_chat_text += message_to_show.c_str();
-							//current_chat_text += L"\r\n";
-							//dialog->Edit2.SetWindowTextW(current_chat_text);
+								dialog->SendMessage(WM_MYMESSAGE, reinterpret_cast<WPARAM>(&CurrentTabName), reinterpret_cast<LPARAM>(&message_to_show));
+
+								//CString current_chat_text;
+								//dialog->Edit2.GetWindowTextW(current_chat_text);
+
+								//current_chat_text += message_to_show.c_str();
+								//current_chat_text += L"\r\n";
+								//dialog->Edit2.SetWindowTextW(current_chat_text);
+							}
+
+							delete[] xor_code;
 						}
 					}
 				}
@@ -1335,29 +1513,7 @@ LRESULT CGalaxySystemsChatDlg::CreateTab(WPARAM w, LPARAM l)
 				private_chat_text += L" ";
 				private_chat_text += L"\"";
 
-				auto xor_code_size = Combo4.GetCurSel() + 1;
-				CString xor_code_string;
-				Edit4.GetWindowTextW(xor_code_string);
-				auto xor_code = _wtoi(xor_code_string.GetBuffer());
-
-				auto message_length = message->length();
-				auto message_to_xor = new wchar_t[message_length + 1];
-
-				if (message_to_xor != nullptr)
-				{
-					memset(message_to_xor, 0, (message_length + 1) * sizeof(wchar_t));
-
-					for (size_t counter = 0; counter < message_length; counter++)
-					{
-						message_to_xor[counter] = message->at(counter);
-					}
-
-					encrypt::encrypt_xor((void*)message_to_xor, message_length * sizeof(wchar_t), xor_code_size, xor_code);
-
-					private_chat_text += message_to_xor;
-
-					delete[]message_to_xor;
-				}
+				private_chat_text += message->c_str();
 
 				//private_chat_text += message->c_str();
 				private_chat_text += L"\"";
@@ -1374,6 +1530,7 @@ LRESULT CGalaxySystemsChatDlg::CreateTab(WPARAM w, LPARAM l)
 
 
 
+//	Add correspondent
 void CGalaxySystemsChatDlg::OnButton8Click()
 {
 	//	Add
@@ -1424,20 +1581,202 @@ void CGalaxySystemsChatDlg::OnButton8Click()
 }
 
 
+//	Edit correspondent
 void CGalaxySystemsChatDlg::OnButton9Click()
 {
 	//	Edit
-	AfxMessageBox(L"Edit");
+	//	AfxMessageBox(L"Edit");
+
+	//	Find and delete
+
+	{
+		Correspondent correspondent;
+
+		CString correspondent_line;
+
+		Combo3.GetWindowTextW(correspondent_line);
+
+		int position_1 = correspondent_line.Find(L" ");
+
+		if (position_1 != -1)
+		{
+			int position_2 = correspondent_line.Find(L" ", position_1 + 1);
+
+			CString protocol;
+
+			for (auto counter = position_1; counter < position_2; counter++)
+			{
+				protocol += correspondent_line.GetAt(counter);
+			}
+
+			position_1 = correspondent_line.Find(L" ", position_2 + 1);
+
+			if (position_1 != -1)
+			{
+				position_2 = correspondent_line.Find(L" ", position_1 + 1);
+
+				CString address;
+
+				for (auto counter = position_1; counter < position_2; counter++)
+				{
+					address += correspondent_line.GetAt(counter);
+				}
+
+				position_1 = correspondent_line.Find(L" ", position_2 + 1);
+
+				if (position_1 != -1)
+				{
+					position_2 = correspondent_line.GetLength();
+
+					CString port;
+
+					for (auto counter = position_1; counter < position_2; counter++)
+					{
+						port += correspondent_line.GetAt(counter);
+					}
+
+					auto port_number = _wtoi(port.GetBuffer());
+
+					correspondent.SetProtocol(protocol);
+					correspondent.SetAddress(address);
+					correspondent.SetPort(port_number);
+
+					Combo3.DeleteString(Combo3.FindString(0, correspondent_line));
+				}
+			}
+		}
+
+		for (auto current = correspondents.begin(); current != correspondents.end(); current++)
+		{
+			if (current->GetAddress() == correspondent.GetAddress() && current->GetPort() == correspondent.GetPort() && current->GetProtocol() == correspondent.GetProtocol())
+			{
+				correspondents.erase(current); //	found correspondent in list
+			}
+		}
+	}
+
+	//	Add
+
+	Correspondent correspondent;
+
+	CString Address;
+	CString PortText;
+	CString Protocol;
+
+	Edit6.GetWindowTextW(Address);
+	Edit7.GetWindowTextW(PortText);
+
+	if (Radio3.GetCheck() > 0)
+	{
+		Protocol = CString(L"TCP");
+	}
+
+	if (Radio4.GetCheck() > 0)
+	{
+		Protocol = CString(L"UDP");
+	}
+
+	WORD Port = 0;
+
+	Port = _wtoi(PortText.GetBuffer());
+
+	correspondent.SetAddress(Address);
+	correspondent.SetPort(Port);
+	correspondent.SetProtocol(Protocol);
+
+	for (auto current = correspondents.begin(); current != correspondents.end(); current++)
+	{
+		if (current->GetAddress() == correspondent.GetAddress() && current->GetPort() == correspondent.GetPort() && current->GetProtocol() == correspondent.GetProtocol())
+		{
+			return; //	correspondent already is in list
+		}
+	}
+
+	CString correspondent_line;
+
+	correspondent_line.Format(L"Protocol %s Address %s Port %d", correspondent.GetProtocol().GetBuffer(), correspondent.GetAddress().GetBuffer(), int(correspondent.GetPort()));
+
+	Combo3.AddString(correspondent_line);
+
+	correspondents.push_back(correspondent);
 }
 
 
+//	Delete correspondent
 void CGalaxySystemsChatDlg::OnButton10Click()
 {
 	//	Delete
-	AfxMessageBox(L"Delete");
+	//	AfxMessageBox(L"Delete");
+
+	{
+		Correspondent correspondent;
+
+		CString correspondent_line;
+
+		Combo3.GetWindowTextW(correspondent_line);
+
+		int position_1 = correspondent_line.Find(L" ");
+
+		if (position_1 != -1)
+		{
+			int position_2 = correspondent_line.Find(L" ", position_1 + 1);
+
+			CString protocol;
+
+			for (auto counter = position_1; counter < position_2; counter++)
+			{
+				protocol += correspondent_line.GetAt(counter);
+			}
+
+			position_1 = correspondent_line.Find(L" ", position_2 + 1);
+
+			if (position_1 != -1)
+			{
+				position_2 = correspondent_line.Find(L" ", position_1 + 1);
+
+				CString address;
+
+				for (auto counter = position_1; counter < position_2; counter++)
+				{
+					address += correspondent_line.GetAt(counter);
+				}
+
+				position_1 = correspondent_line.Find(L" ", position_2 + 1);
+
+				if (position_1 != -1)
+				{
+					position_2 = correspondent_line.GetLength();
+
+					CString port;
+
+					for (auto counter = position_1; counter < position_2; counter++)
+					{
+						port += correspondent_line.GetAt(counter);
+					}
+
+					auto port_number = _wtoi(port.GetBuffer());
+
+					correspondent.SetProtocol(protocol);
+					correspondent.SetAddress(address);
+					correspondent.SetPort(port_number);
+
+					Combo3.DeleteString(Combo3.FindString(0, correspondent_line));
+				}
+			}
+		}
+
+		for (auto current = correspondents.begin(); current != correspondents.end(); current++)
+		{
+			if (current->GetAddress() == correspondent.GetAddress() && current->GetPort() == correspondent.GetPort() && current->GetProtocol() == correspondent.GetProtocol())
+			{
+				correspondents.erase(current); //	found correspondent in list
+			}
+		}
+	}
 }
 
 
+//	Find correspondent
 void CGalaxySystemsChatDlg::OnButton13Click()
 {
 	//	Find
@@ -1445,6 +1784,7 @@ void CGalaxySystemsChatDlg::OnButton13Click()
 }
 
 
+//	Store correspondents
 void CGalaxySystemsChatDlg::OnButton11Click()
 {
 	//	Store
@@ -1452,6 +1792,7 @@ void CGalaxySystemsChatDlg::OnButton11Click()
 }
 
 
+//	Load correspondents
 void CGalaxySystemsChatDlg::OnButton12Click()
 {
 	//	Load

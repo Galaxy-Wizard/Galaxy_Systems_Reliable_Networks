@@ -159,20 +159,20 @@ protected:
 	virtual void OnOK();
 	virtual void OnCancel();
 
-	afx_msg void OnButton1Click();
-	afx_msg void OnButton2Click();
-	afx_msg void OnButton3Click();
-	afx_msg void OnButton4Click();
-	afx_msg void OnButton5Click();
-	afx_msg void OnButton6Click();
-	afx_msg void OnButton7Click();
+	afx_msg void OnButton1Click();		//	Listen
+	afx_msg void OnButton2Click();		//	Stop listening
+	afx_msg void OnButton3Click();		//	Select send interface
+	afx_msg void OnButton4Click();		//	Stop sending interface
+	afx_msg void OnButton5Click();		//	Send
+	afx_msg void OnButton6Click();		//	Update
+	afx_msg void OnButton7Click();		//	Load default settings
 
-	afx_msg void OnButton8Click();
-	afx_msg void OnButton9Click();
-	afx_msg void OnButton10Click();
-	afx_msg void OnButton13Click();
-	afx_msg void OnButton11Click();
-	afx_msg void OnButton12Click();
+	afx_msg void OnButton8Click();		//	Add correspondent
+	afx_msg void OnButton9Click();		//	Edit correspondent
+	afx_msg void OnButton10Click();		//	Delete correspondent
+	afx_msg void OnButton13Click();		//	Find correspondent
+	afx_msg void OnButton11Click();		//	Store correspondents
+	afx_msg void OnButton12Click();		//	Load correspondents
 
 	DECLARE_MESSAGE_MAP()
 public:

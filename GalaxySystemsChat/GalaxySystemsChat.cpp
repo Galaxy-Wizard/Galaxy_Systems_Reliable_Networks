@@ -100,8 +100,8 @@ BOOL CGalaxySystemsChatApp::InitInstance()
 	}
 	else if (nResponse == -1)
 	{
-		TRACE(traceAppMsg, 0, "Предупреждение. Не удалось создать диалоговое окно, поэтому работа приложения неожиданно завершена.\n");
-		TRACE(traceAppMsg, 0, "Предупреждение. При использовании элементов управления MFC для диалогового окна невозможно #define _AFX_NO_MFC_CONTROLS_IN_DIALOGS.\n");
+		TRACE(traceAppMsg, 0, L"Предупреждение. Не удалось создать диалоговое окно, поэтому работа приложения неожиданно завершена.\n");
+		TRACE(traceAppMsg, 0, L"Предупреждение. При использовании элементов управления MFC для диалогового окна невозможно #define _AFX_NO_MFC_CONTROLS_IN_DIALOGS.\n");
 	}
 
 	if (pShellManager != nullptr)

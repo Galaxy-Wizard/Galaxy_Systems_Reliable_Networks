@@ -37,7 +37,7 @@ namespace encrypt
 
 		for (size_t local_counter = 0; local_counter < source_message_length; local_counter++)
 		{
-			for (size_t local_atom_counter = 0; local_atom_counter < atom_data_size; local_atom_counter++)
+			for (size_t local_atom_counter = 0; local_atom_counter < atom_data_size && atom_data_size * local_counter + local_atom_counter < source_message_length; local_atom_counter++)
 			{
 				local_result[atom_data_size * local_counter + local_atom_counter] ^= unsigned char(xor_code >> (local_atom_counter * std::numeric_limits<unsigned char>::digits));
 			}
@@ -52,7 +52,7 @@ namespace encrypt
 
 		for (size_t local_counter = 0; local_counter < source_message_length; local_counter++)
 		{
-			for (size_t local_atom_counter = 0; local_atom_counter < atom_data_size; local_atom_counter++)
+			for (size_t local_atom_counter = 0; local_atom_counter < atom_data_size && atom_data_size * local_counter + local_atom_counter < source_message_length; local_atom_counter++)
 			{
 				local_result[atom_data_size * local_counter + local_atom_counter] ^= xor_code[local_atom_counter];
 			}
