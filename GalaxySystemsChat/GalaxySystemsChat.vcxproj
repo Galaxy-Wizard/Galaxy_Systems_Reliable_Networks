@@ -93,7 +93,7 @@
       <WarningLevel>Level3</WarningLevel>
       <SDLCheck>true</SDLCheck>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
-      <AdditionalIncludeDirectories>..\..\boost_1_77_0\;..\..\openssl-openssl-3.1.3\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\Curl-8.4.0\include;..\..\openssl-openssl-3.1.3\include;..\..\boost_1_77_0\</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
     </ClCompile>
     <Link>
@@ -121,13 +121,14 @@
       <WarningLevel>Level3</WarningLevel>
       <SDLCheck>true</SDLCheck>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
-      <AdditionalIncludeDirectories>..\..\Curl-8.4.0\builds\libcurl-vc14-x64-debug-static-ipv6-sspi-schannel\include;..\..\boost_1_77_0\;..\..\openssl-openssl-3.1.3\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\Curl-8.4.0\include;..\..\openssl-openssl-3.1.3\include;..\..\boost_1_77_0\</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <RegisterOutput>true</RegisterOutput>
-      <AdditionalLibraryDirectories>..\Curl-8.4.0\builds\libcurl-vc14-x64-debug-static-ipv6-sspi-schannel\lib\</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>
+      </AdditionalLibraryDirectories>
     </Link>
     <Midl>
       <MkTypLibCompatible>false</MkTypLibCompatible>
@@ -150,7 +151,7 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
-      <AdditionalIncludeDirectories>..\..\boost_1_77_0\;..\..\openssl-openssl-3.1.3\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\Curl-8.4.0\include;..\..\openssl-openssl-3.1.3\include;..\..\boost_1_77_0\</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
     </ClCompile>
     <Link>
@@ -186,7 +187,7 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
-      <AdditionalIncludeDirectories>E:\Projects\Curl-8.4.0\include;E:\Projects\openssl-openssl-3.1.3\include;..\..\boost_1_77_0\</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\Curl-8.4.0\include;..\..\openssl-openssl-3.1.3\include;..\..\boost_1_77_0\</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
     </ClCompile>
     <Link>
@@ -194,7 +195,7 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <RegisterOutput>true</RegisterOutput>
-      <AdditionalLibraryDirectories>E:\Projects\Curl-8.4.0\builds\libcurl-vc-x64-release-dll-ipv6-sspi-schannel\lib</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>..\..\Curl-8.4.0\builds\libcurl-vc-x64-release-dll-ipv6-sspi-schannel\lib</AdditionalLibraryDirectories>
       <IgnoreSpecificDefaultLibraries>
       </IgnoreSpecificDefaultLibraries>
     </Link>
