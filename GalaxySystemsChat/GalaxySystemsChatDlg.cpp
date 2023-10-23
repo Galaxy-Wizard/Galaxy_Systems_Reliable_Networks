@@ -1862,8 +1862,10 @@ CString ResolveUniveralNamingSystem(CString pUNS, CString ServerUNS)
 
 	CString Answer = GetAnswerFromURL(Request);
 
-
-	Result = pUNS;
+	if (Result.GetLength() == 0)
+	{
+		Result = pUNS;
+	}
 
 	return Result;
 }
