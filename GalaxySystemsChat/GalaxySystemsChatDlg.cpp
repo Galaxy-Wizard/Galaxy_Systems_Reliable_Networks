@@ -159,6 +159,7 @@ void CGalaxySystemsChatDlg::DoDataExchange(CDataExchange* pDX)
 
 	DDX_Control(pDX, IDC_RADIO3, Radio3);
 	DDX_Control(pDX, IDC_RADIO4, Radio4);
+	DDX_Control(pDX, IDC_EDIT8, Edit8);
 }
 
 #define WM_MYMESSAGE (WM_USER + 100)
@@ -618,6 +619,10 @@ void CGalaxySystemsChatDlg::OnButton5Click()
 
 	Edit4.GetWindowTextW(XorCode);
 
+	CString Name;
+
+	Edit8.GetWindowTextW(Name);
+
 	CString ProtocolName;
 
 	CString Address;
@@ -714,7 +719,7 @@ void CGalaxySystemsChatDlg::OnButton5Click()
 		break;
 	}
 
-	std::wstring message = GalaxySystemsChatSingature + Message.GetBuffer();
+	std::wstring message = GalaxySystemsChatSingature + CString(L"Message from '").GetBuffer() + Name.GetBuffer() + CString(L"': ").GetBuffer() + Message.GetBuffer();
 
 	auto message_size = message.length() * sizeof(wchar_t);
 

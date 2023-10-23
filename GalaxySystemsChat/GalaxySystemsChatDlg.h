@@ -219,4 +219,5 @@ public:
 	afx_msg void OnTcnSelchangeStaticTab(NMHDR* pNMHDR, LRESULT* pResult);
 	CButton Radio3;
 	CButton Radio4;
+	CEdit Edit8;
 };
