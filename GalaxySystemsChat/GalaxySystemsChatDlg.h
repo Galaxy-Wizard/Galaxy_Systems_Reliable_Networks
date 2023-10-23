@@ -9,6 +9,8 @@
 
 #include "TabPageDialog.h"
 
+CString ResolveUniveralNamingSystem(CString pUNS, CString ServerUNS = CString(L"https://uns.group.keenetic.link/query.php?uns="));
+
 class interface_information
 {
 public:
@@ -176,14 +178,18 @@ protected:
 
 	DECLARE_MESSAGE_MAP()
 public:
+	
 	CComboBox Combo1;
 	CComboBox Combo2;
 	CComboBox Combo3;
 	CComboBox Combo4;
+	
 	CButton Check1;
 	CButton Check2;
 	CButton Check3;
 	CButton Check4;
+	CButton Check5;
+
 	CEdit Edit1;
 	CEdit Edit2;
 	CEdit Edit3;
@@ -191,8 +197,13 @@ public:
 	CEdit Edit5;
 	CEdit Edit6;
 	CEdit Edit7;
+	CEdit Edit8;
+
 	CButton Radio1;
 	CButton Radio2;
+	CButton Radio3;
+	CButton Radio4;
+
 	CTabCtrl Tab1;
 
 	std::list<interface_information> listen_interfaces;
@@ -217,7 +228,4 @@ public:
 
 	afx_msg void OnTcnSelchangingStaticTab(NMHDR* pNMHDR, LRESULT* pResult);
 	afx_msg void OnTcnSelchangeStaticTab(NMHDR* pNMHDR, LRESULT* pResult);
-	CButton Radio3;
-	CButton Radio4;
-	CEdit Edit8;
 };

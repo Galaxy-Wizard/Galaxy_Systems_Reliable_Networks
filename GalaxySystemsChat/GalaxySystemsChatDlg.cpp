@@ -13,13 +13,36 @@
 #include "network\ip_4\BlockSock_ip_4.h"
 #include "network\ip_6\BlockSock_ip_6.h"
 
+#include "curl\curl.h"
+
 #include "boost\asio.hpp"
+
+//#define OPENSSL_API_COMPAT 0x10100000L
+//#include "boost\asio\ssl.hpp"
+
+
+//#ifdef _DEBUG
+//#pragma comment (lib,"libcurl_a_debug.lib")
+//#else
+//#pragma comment (lib,"libcurl_a.lib")
+//#endif // _DEBUG
+
+#pragma comment (lib,"libcurl.lib")
+
+/*Windows Specific Additional Depenedencies*/
+#pragma comment (lib,"Normaliz.lib")
+#pragma comment (lib,"Ws2_32.lib")
+#pragma comment (lib,"Wldap32.lib")
+#pragma comment (lib,"Crypt32.lib")
+
 
 #include "TabPageDialog.h"
 
 #include "CAboutDialog.h"
 
 #include "resource.h"
+
+CString GetAnswerFromURL(CString pURL);
 
 const std::wstring GalaxySystemsChatSingature(L"GalaxySystemsChat");
 
@@ -160,6 +183,7 @@ void CGalaxySystemsChatDlg::DoDataExchange(CDataExchange* pDX)
 	DDX_Control(pDX, IDC_RADIO3, Radio3);
 	DDX_Control(pDX, IDC_RADIO4, Radio4);
 	DDX_Control(pDX, IDC_EDIT8, Edit8);
+	DDX_Control(pDX, IDC_CHECK5, Check5);
 }
 
 #define WM_MYMESSAGE (WM_USER + 100)
@@ -769,6 +793,11 @@ void CGalaxySystemsChatDlg::OnButton5Click()
 				BYTE symbol = encrypted_message[counter];
 
 				message.push_back(symbol);
+			}
+
+			if (Check5.GetState() != 0)
+			{
+				Address = ResolveUniveralNamingSystem(Address);
 			}
 
 			std::string address(CStringA(Address).GetBuffer());
@@ -1803,3 +1832,51 @@ void CGalaxySystemsChatDlg::OnButton12Click()
 	//	Load
 	AfxMessageBox(L"Load");
 }
+
+//	Resolve UNS
+CString ResolveUniveralNamingSystem(CString pUNS, CString ServerUNS)
+{
+	CString Result;
+
+	CString Request = ServerUNS + pUNS;
+
+	CString Answer = GetAnswerFromURL(Request);
+
+
+	Result = pUNS;
+
+	return Result;
+}
+
+static int writer(wchar_t* data, size_t size, size_t nmemb, std::wstring* writerData)
+{
+	if (writerData == NULL)
+		return 0;
+
+	writerData->append(data, size * nmemb);
+
+	return size * nmemb;
+}
+
+CString GetAnswerFromURL(CString pURL)
+{
+	std::wstring content;
+
+	curl_global_init(CURL_GLOBAL_ALL);
+	CURL* curl = nullptr;
+
+	curl = curl_easy_init();
+	if (curl) {
+		curl_easy_setopt(curl, CURLOPT_URL, pURL.GetBuffer());
+		curl_easy_setopt(curl, CURLOPT_WRITEDATA, &content);
+		curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, writer);
+
+		CURLcode code = curl_easy_perform(curl);
+
+		curl_easy_cleanup(curl);
+	}
+	curl_global_cleanup();
+	
+	return CString(content.c_str());
+}
+
