@@ -27,7 +27,12 @@
 //#pragma comment (lib,"libcurl_a.lib")
 //#endif // _DEBUG
 
+#ifdef _DEBUG
+#pragma comment (lib,"libcurl_debug.lib")
+#else
 #pragma comment (lib,"libcurl.lib")
+#endif // _DEBUG
+
 
 /*Windows Specific Additional Depenedencies*/
 #pragma comment (lib,"Normaliz.lib")
@@ -64,12 +69,27 @@ struct ClientTcp
 		boost::asio::ip::tcp::resolver resolver(io_service);
 		boost::asio::ip::tcp::resolver::query tcp_query(host, port);
 		boost::asio::ip::tcp::resolver::iterator endpoint = resolver.resolve(tcp_query);
-		boost::asio::connect(this->socket, endpoint);
+
+		try
+		{
+			boost::asio::connect(this->socket, endpoint);
+		}
+		catch (std::exception& e)
+		{
+			AfxMessageBox(CString(e.what()), MB_ICONEXCLAMATION);
+		}
 	};
 
 	void send(std::vector<BYTE> const& message)
 	{
-		socket.send(boost::asio::buffer(message));
+		try
+		{
+			socket.send(boost::asio::buffer(message));
+		}
+		catch (std::exception& e)
+		{
+			AfxMessageBox(CString(e.what()), MB_ICONEXCLAMATION);
+		}
 	}
 
 	~ClientTcp()
@@ -1070,7 +1090,7 @@ UINT __cdecl listen_interface_thread_tcp(LPVOID pParam)
 
 			socket_.set_option(boost::asio::detail::socket_option::integer<SOL_SOCKET, SO_RCVTIMEO>{ 500 });
 
-		
+
 			try
 			{
 				//read operation
@@ -1876,7 +1896,7 @@ CString GetAnswerFromURL(CString pURL)
 		curl_easy_cleanup(curl);
 	}
 	curl_global_cleanup();
-	
+
 	return CString(content.c_str());
 }
 
