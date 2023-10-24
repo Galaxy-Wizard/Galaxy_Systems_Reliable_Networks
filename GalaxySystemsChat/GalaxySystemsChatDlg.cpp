@@ -17,6 +17,8 @@
 
 #include "boost\asio.hpp"
 
+#include <iostream>
+
 //#define OPENSSL_API_COMPAT 0x10100000L
 //#include "boost\asio\ssl.hpp"
 
@@ -68,10 +70,9 @@ struct ClientTcp
 	{
 		boost::asio::ip::tcp::resolver resolver(io_service);
 		boost::asio::ip::tcp::resolver::query tcp_query(host, port);
-		boost::asio::ip::tcp::resolver::iterator endpoint = resolver.resolve(tcp_query);
-
 		try
 		{
+			boost::asio::ip::tcp::resolver::iterator endpoint = resolver.resolve(tcp_query);
 			boost::asio::connect(this->socket, endpoint);
 		}
 		catch (std::exception& e)
@@ -108,13 +109,27 @@ struct ClientUdp
 	{
 		boost::asio::ip::udp::resolver resolver(io_service);
 		boost::asio::ip::udp::resolver::query udp_query(host, port);
-		boost::asio::ip::udp::resolver::iterator endpoint = resolver.resolve(udp_query);
-		boost::asio::connect(this->socket, endpoint);
+		try
+		{
+			boost::asio::ip::udp::resolver::iterator endpoint = resolver.resolve(udp_query);
+			boost::asio::connect(this->socket, endpoint);
+		}
+		catch (std::exception& e)
+		{
+			AfxMessageBox(CString(e.what()), MB_ICONEXCLAMATION);
+		}
 	};
 
 	void send(std::vector<BYTE> const& message)
 	{
-		socket.send(boost::asio::buffer(message));
+		try
+		{
+			socket.send(boost::asio::buffer(message));
+		}
+		catch (std::exception& e)
+		{
+			AfxMessageBox(CString(e.what()), MB_ICONEXCLAMATION);
+		}
 	}
 
 	~ClientUdp()
@@ -1862,43 +1877,116 @@ CString ResolveUniveralNamingSystem(CString pUNS, CString ServerUNS)
 
 	CString Answer = GetAnswerFromURL(Request);
 
-	if (Result.GetLength() == 0)
+	//local.dns.uns
+
+	if (Answer.GetLength() == 0)
 	{
 		Result = pUNS;
+	}
+	else
+	{
+		int i = 0;
+		for (; i < Answer.GetLength(); i++)
+		{
+			wchar_t cs = Answer.GetAt(i);
+			if (cs == L' ' || cs == L'\t')
+			{
+				break;
+			}
+		}
+		i++;
+		for (; i < Answer.GetLength(); i++)
+		{
+			wchar_t cs = Answer.GetAt(i);
+			if (cs != L' ' && cs != L'\t')
+			{
+				break;
+			}
+		}
+		i++;
+		for (; i < Answer.GetLength(); i++)
+		{
+			wchar_t cs = Answer.GetAt(i);
+			if (cs == L' ' || cs == L'\t')
+			{
+				break;
+			}
+		}
+		i++;
+		for (; i < Answer.GetLength(); i++)
+		{
+			wchar_t cs = Answer.GetAt(i);
+			if (cs != L' ' && cs != L'\t')
+			{
+				break;
+			}
+		}
+		for (; i < Answer.GetLength(); i++)
+		{
+			wchar_t cs = Answer.GetAt(i);
+			if (cs == L'\n' || cs == L'\r' || cs == L'\t' || cs == L' ')
+			{
+				break;
+			}
+			Result += cs;
+		}
 	}
 
 	return Result;
 }
 
-static int writer(wchar_t* data, size_t size, size_t nmemb, std::wstring* writerData)
+size_t writer(void* data, size_t size, size_t nmemb, void* clientp)
 {
-	if (writerData == NULL)
+	size_t realsize = size * nmemb;
+	CString* Result = (CString*)clientp;
+
+	if (Result != nullptr)
+	{
+		for (int i = 0; i + 1 < realsize; i += 2)
+		{
+			INT16 high_byte = ((char*)data)[i];
+			INT16 low_byte = ((char*)data)[i + 1];
+
+			wchar_t cs = high_byte * 256 + low_byte;
+
+			*Result += cs;
+		}
+	}
+	else
+	{
 		return 0;
+	}
 
-	writerData->append(data, size * nmemb);
 
-	return size * nmemb;
+	return realsize;
 }
 
 CString GetAnswerFromURL(CString pURL)
 {
-	std::wstring content;
+	CString Result;
 
-	curl_global_init(CURL_GLOBAL_ALL);
-	CURL* curl = nullptr;
+	CURLcode res;
+	CURL* curl_handle = curl_easy_init();
 
-	curl = curl_easy_init();
-	if (curl) {
-		curl_easy_setopt(curl, CURLOPT_URL, pURL.GetBuffer());
-		curl_easy_setopt(curl, CURLOPT_WRITEDATA, &content);
-		curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, writer);
+	if (curl_handle)
+	{
+		/* set url */
+		curl_easy_setopt(curl_handle, CURLOPT_URL, CStringA(pURL.GetBuffer()).GetBuffer());
 
-		CURLcode code = curl_easy_perform(curl);
+		/* send all data to this function  */
+		curl_easy_setopt(curl_handle, CURLOPT_WRITEFUNCTION, writer);
 
-		curl_easy_cleanup(curl);
+		/* we pass our 'chunk' struct to the callback function */
+		curl_easy_setopt(curl_handle, CURLOPT_WRITEDATA, (void*)&Result);
+
+		/* send a request */
+		res = curl_easy_perform(curl_handle);
+
+		curl_easy_cleanup(curl_handle);
 	}
-	curl_global_cleanup();
 
-	return CString(content.c_str());
+	//AfxMessageBox(Result);
+
+	return Result;
 }
 
