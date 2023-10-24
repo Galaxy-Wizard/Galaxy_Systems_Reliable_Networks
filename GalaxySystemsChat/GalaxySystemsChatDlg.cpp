@@ -1942,14 +1942,59 @@ size_t writer(void* data, size_t size, size_t nmemb, void* clientp)
 
 	if (Result != nullptr)
 	{
-		for (int i = 0; i + 1 < realsize; i += 2)
+		/*//
+		CStringA ResultA;
+
+		for (int i = 0; i < realsize; i++)
 		{
-			INT16 high_byte = ((char*)data)[i];
-			INT16 low_byte = ((char*)data)[i + 1];
+			char cs = ((char*)data)[i];
 
-			wchar_t cs = high_byte * 256 + low_byte;
+			if (cs == 0)
+			{
+				cs = '_';
+			}
+			else
+			{
+				if (cs == '\r')
+				{
+					cs = '-';
+				}
+				else
+				{
+					if (cs == '\n')
+					{
+						cs = '+';
+					}
+					else
+					{
+						if (cs == '\t')
+						{
+							cs = '|';
+						}
+					}
+				}
+			}
 
-			*Result += cs;
+			ResultA += cs;
+		}
+
+		::MessageBoxA(nullptr, ResultA.GetBuffer(), nullptr, MB_ICONINFORMATION);
+		//*/
+		if ((realsize & 1) == 0)
+		{
+			for (int i = 0; i + 1 < realsize; i += 2)
+			{
+				INT16 high_byte = ((char*)data)[i];
+				INT16 low_byte = ((char*)data)[i + 1];
+
+				wchar_t cs = high_byte * 256 + low_byte;
+
+				*Result += cs;
+			}
+		}
+		else
+		{
+			return 0;
 		}
 	}
 	else
