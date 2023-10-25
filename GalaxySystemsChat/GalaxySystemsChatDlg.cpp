@@ -1877,7 +1877,7 @@ CString ResolveUniveralNamingSystem(CString pUNS, CString ServerUNS)
 
 	CString Answer = GetAnswerFromURL(Request);
 
-	//local.dns.uns
+	//AfxMessageBox(Answer);
 
 	if (Answer.GetLength() == 0)
 	{
@@ -1932,6 +1932,8 @@ CString ResolveUniveralNamingSystem(CString pUNS, CString ServerUNS)
 		}
 	}
 
+	//AfxMessageBox(Result);
+
 	return Result;
 }
 
@@ -1940,9 +1942,9 @@ size_t writer(void* data, size_t size, size_t nmemb, void* clientp)
 	size_t realsize = size * nmemb;
 	CString* Result = (CString*)clientp;
 
-	if (Result != nullptr)
+	if (Result != nullptr && data != nullptr)
 	{
-		/*//
+		/*///
 		CStringA ResultA;
 
 		for (int i = 0; i < realsize; i++)
@@ -1979,7 +1981,7 @@ size_t writer(void* data, size_t size, size_t nmemb, void* clientp)
 		}
 
 		::MessageBoxA(nullptr, ResultA.GetBuffer(), nullptr, MB_ICONINFORMATION);
-		//*/
+		///*/
 		if ((realsize & 1) == 0)
 		{
 			for (int i = 0; i + 1 < realsize; i += 2)
